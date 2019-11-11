@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- POM documentation at https://maven.apache.org/pom.html -->
+
+	<!--
+		QUESTION: Does it matter where in the file I place <parents>, <build>, <packaging>, and <modules>?
+		Do any of them need to be placed before or after some specific element?
+
+		Should <dependencies> be within <dependencyManagement>, or outside of it?
+		If outside, does before/after matter?
+	-->
+
+	<groupId>com.StaticPH</groupId>
+	<artifactId>MicroAud</artifactId>
+	<version>1.0-ALPHA</version>
+
+	<!-- OPTIONAL: Conversational name for the project. Use the artifactId as a default. -->
+	<name>Tiny CLI Audio Player</name>
+	<!--OPTIONAL: Simple description of the project-->
+	<!--    <description>YOUR DESCRIPTION HERE</description>-->
+
+	<!--OPTIONAL: When unspecified, 'jar' is the default packaging method.-->
+	<!--Replace 'jar' with 'pom' for the top level pom.xml file in multi-module projects.-->
+	<packaging>jar</packaging>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.beust</groupId>
+				<artifactId>jcommander</artifactId>
+				<version>1.78</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<!--
+				Why on Earth is this defaulting to Java 5 anyways?!?!
+				Java 5 is HOW MANY years out of date now?? Extended support for it ended in April of 2015!!
+
+				My project's SDK is set to Java 8, and I'd have expected IntelliJ's Maven integration to be smart enough to automatically
+				assign the bytecode target/source accordingly. At least in the case of a single module project, where there's no reason
+				to build with a JDK older than the target version.
+				-->
+				<configuration>
+					<source>8</source>
+					<target>8</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<!--OPTIONAL: Only useful for multi-module projects, each of which tends to have its own pom.xml file, whose parent is the top level pom file-->
+	<modules>
+		<!--        <module>MODULE ARTIFACT ID</module>-->
+	</modules>
+</project>
+
+		<!--Examples: -->
+		<!-- https://raw.githubusercontent.com/Nincraft/ModPackDownloader/master/pom.xml -->
+		<!-- https://github.com/Nincraft/ModPackDownloader/blob/master/modpackdownloader-core/pom.xml -->
+		<!-- https://github.com/Nincraft/ModPackDownloader/blob/master/modpackdownloader-maven-plugin/pom.xml -->
