@@ -15,6 +15,8 @@ public interface IStringUtils {
 	static String charToString(char c) {return String.valueOf(c);}
 //	default String charToString(char c){return String.valueOf(c);}
 
+	static boolean isNullOrEmpty(String s){ return s == null || s.isEmpty();}
+
 	/*
 	Question: Why not/use 'default' functions?
 	 Can a default method be overridden by an implementing class?

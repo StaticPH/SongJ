@@ -2,7 +2,11 @@ package com.StaticPH.MicroAud;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Iterator;
 import java.util.Scanner;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +44,7 @@ final class AssortedUtils implements IFileUtils {
 		}
 	}
 
+	@Deprecated
 	public File getFileFromScanner() {
 		//Question: realistically could probably make this static in the interface, but should I?
 		File f;
@@ -72,7 +77,66 @@ final class AssortedUtils implements IFileUtils {
 		return f;
 	}   //this should probably throw exceptions, not catch them
 
+	public static URL getFileURL(File f) throws MalformedURLException { return f.toURI().toURL();}
 
+/*	public static void loopClip(Clip c){
+		if (clip.isRunning())
+			clip.stop();   // Stop the player if it is still running
+		clip.setFramePosition(0); // rewind to the beginning
+		clip.start();     // Start playing
+	}*/
+
+	//TODO: decide between @NotNull on Predicate(and maybe Iterable) or returning false when either is null
+	// also whether to use @NotNull or call `Objects.requireNonNull(VARIABLE);` instead
+	/**
+	 * Filter an Iterable by applying a Predicate function to each element within.
+	 * If the predicate is false, remove the element.
+	 * @param <T>       The type of object contained within the Iterable
+	 * @param iterable  An Iterable object collection to filter. May be null.
+	 * @param comparer  A Predicate function according to which the contents of iterable should be filtered.
+	 *                  May be null.
+	 * @return          Returns true if the filtering modified the Iterable; returns false otherwise
+	 *                  Always returns false if either Iterable or Predicate is null.
+	 */
+	public static <T> boolean filter(Iterable<T> iterable, Predicate<? super T> comparer) {
+		boolean didModify = false;
+		if (iterable != null && comparer != null) {
+			for (Iterator<T> iter = iterable.iterator(); iter.hasNext(); ) {
+				if (!comparer.test(iter.next())) {
+					iter.remove();
+					didModify = true;
+				}
+			}
+		}
+		return didModify;
+	}
+
+	// ???: I dont actually know if I CAN negate the predicate with !predicate
+	/**
+	 * Filter an Iterable by applying a Predicate function to each element within.
+	 * If the predicate is true, remove the element.
+	 * <p>
+	 * This is equivalent to <code>filter(iterable, !(comparer))</code> where <code> comparer != null</code>
+	 * </p>
+	 * @param <T>       The type of object contained within the Iterable
+	 * @param iterable  An Iterable object collection to filter. May be null.
+	 * @param comparer  A Predicate function according to which the contents of iterable should be filtered.
+	 *                  May be null.
+	 * @return          Returns true if the filtering modified the Iterable; returns false otherwise
+	 *                  Always returns false if either Iterable or Predicate is null.
+	 */
+	public static <T> boolean inverseFilter(Iterable<T> iterable, Predicate<? super T> comparer) {
+		boolean didModify = false;
+		if (iterable != null && comparer != null) {
+			for (Iterator<T> iter = iterable.iterator(); iter.hasNext(); ) {
+				if (comparer.test(iter.next())) {
+					iter.remove();
+					didModify = true;
+				}
+			}
+		}
+		return didModify;
+	}
 }
 
 @SuppressWarnings("unused")
@@ -87,7 +151,6 @@ class MathUtils {
 
 	public static boolean isEven(long n) {return (n % 2) == 0;}
 
-	public static int foo(int a) {return a;}
 	//	double nthRoot (const double rootOf, const int nth) {return Math.pow (rootOf, 1.0 / nth);}
 }
 

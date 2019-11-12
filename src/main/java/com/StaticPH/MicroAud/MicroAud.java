@@ -1,8 +1,13 @@
 package com.StaticPH.MicroAud;
 
-import javax.sound.sampled.*;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 
 
@@ -30,6 +35,7 @@ public class MicroAud {
 	// any files specified from the command line; said argument would be null in the absence of arguments
 	// Even just using the parameter mechanic would eliminate the need for this (and hasFileArgs) to be static,
 	// and possibly the existence of hasFileArgs entirely
+	@Deprecated
 	public static File getFile() {
 		File file;
 		System.out.println("Possible fs roots: " + Arrays.toString(File.listRoots()));
@@ -78,16 +84,11 @@ public class MicroAud {
 		return file;
 	}
 
-	// This could be made non-static if a local MicroAud variable was instantiated in main()
-	public static void parseArgs(String[] args) {
-
-		// if the program received command line arguments for files, set hasFileargs = true
-		hasFileArgs = false; // Temporary: for now, hardcode to false
-	}//TODO?
-
-
-	/*Specifically useful for Wav files, and a handful of other types that likely wont be used anyways*/
-	public static void playWav(File file) {
+	/*
+	Play .WAV, .AU, or .AIFF files (and anything else shown by `System.out.println(Arrays.toString(AudioSystem.getAudioFileTypes()))`)
+	Should also support the MIDI based song file formats: SMF type 0 (Standard MIDI File, aka .mid files), SMF type 1 and RMF.
+	*/
+	public static void playBasic(File file) {
 		try {
 			AudioInputStream ais = AudioSystem.getAudioInputStream(file);
 			Clip clip = AudioSystem.getClip();
@@ -100,7 +101,7 @@ public class MicroAud {
 		}
 	}
 
-	public static void playClip(AudioInputStream audIn) {
+	public static void playClipFromStream(AudioInputStream audIn) {
 		try (Clip clip = AudioSystem.getClip()) {
 			clip.open(audIn);
 			clip.start();
@@ -123,25 +124,56 @@ public class MicroAud {
 	public static void doAud(File file) {
 		try {
 			AudioInputStream audIn = AudioSystem.getAudioInputStream(file);
-			playClip(audIn);
+			playClipFromStream(audIn);
 		}
 		catch (UnsupportedAudioFileException | IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public static void main(String[] args) {
+/*
+	//https://stackoverflow.com/a/10645913
+	public static File getRc(String name) throws URISyntaxException {
+		MicroAud mAud = new MicroAud();
+		return new File(MicroAud.class.getResource(name).toURI());
+//		return mAud.getClass().getResource(name).getFile();
+//		mAud.getClass().getResourceAsStream(name);
+	}
+*/
 
+	/*public static void selectPlayer(String filepath) {
+		int extSep = filepath.lastIndexOf('.');
+		if (extSep == -1) { extSep = 0;}
+		String ext = filepath.substring(extSep).toLowerCase();
+		switch (ext) {
+			case "wav":
+			case "au":
+			case "aiff":
+				return MicroAud::playBasic;// how do? i basically want function pointers...at least i think thats how i want this to work...
+			case "mp3":
+				return;
+			case "ogg":
+				return;
+			default:
+				System.out.println("Unsupported media type: " + ext);
+		}
+	}*/
+
+	public static void main(String[] args) {
+//		MicroAud mAud = new MicroAud();
 		AssortedUtils.logArgs(args);
 
-		// TODO: prioritize command line parameters over use of scanner;
-		//       only prompt for information that isnt provided from the command line
 
-		// this kind of thing is where I'd love to be able to call a non-static from within a static context -_-
-		//      because something like hasFileArgs REALLY shouldn't be static
-		//      and frankly, im not sure if I want to effectively limit myself to a single instance of this class;
-		//          it may not always be the top-level class
-		parseArgs(args);
+		ArgManager argManager = new ArgManager(args);
+		CLIArguments arguments = argManager.getArguments();
+
+		if (arguments.isHelpEnabled()) {
+			argManager.getJCommander().usage();
+			return;
+		}
+
+		argManager.init();
+
 		File file; // = getFile();
 		{// Temporarily hardcoded
 //			file = new File("D:/msys2_64/dir");
@@ -149,7 +181,7 @@ public class MicroAud {
 			file = new File("D:/Projects/Java/Microaud/src/main/resources/TestWav.wav");
 			System.out.println("Reading from: " + file.getAbsolutePath());
 		}
-		doAud(file);
+//		doAud(file);
 
 	}
 }
