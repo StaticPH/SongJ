@@ -7,8 +7,8 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Vector;
 
 
 @SuppressWarnings({"WeakerAccess", "unused", "RedundantSuppression"})
@@ -22,19 +22,19 @@ public class MicroAud {
 	private static final AssortedUtils au = new AssortedUtils();        //NOTE: I WANT TO GET RID OF THIS!!
 	private static final StringUtils sUtil = new StringUtils();        //NOTE: I WANT TO GET RID OF THIS!!
 
-	private static boolean hasFileArgs = false;
 
-	/* ======= Instance (Non-Static) Variables ======= */
+	//======= Instance (Non-Static) Variables =======
 
-	/* ======= Class Constructors ======= */
+	//======= Class Constructors =======
 	public MicroAud() {}
 
-	/* ======= Methods ======= */
+	//======= Methods =======
 
 	// Consider extracting this to AssortedUtils and simply taking a String[] parameter containing
 	// any files specified from the command line; said argument would be null in the absence of arguments
 	// Even just using the parameter mechanic would eliminate the need for this (and hasFileArgs) to be static,
 	// and possibly the existence of hasFileArgs entirely
+	@SuppressWarnings("ConstantConditions")
 	@Deprecated
 	public static File getFile() {
 		File file;
@@ -61,28 +61,59 @@ public class MicroAud {
 		*/
 
 		System.out.print("File to read from: ");
-		// NOTE: I'd LIKE to be able to call `IFileUtils.getFileFromScanner() instead,
-		// and have the compiler be smart enough to find the desired implementation on its own`
-		if (!hasFileArgs) {
-			if ((file = au.getFileFromScanner()) != null) {
-				if (!file.isDirectory()) {
-					System.out.println("Reading from: " + file.getAbsolutePath());
-				}
-				else { System.out.printf("Error: '%s' is a directory.\n", file.getAbsolutePath());}
-			}
-		}
-		else {
-			//TODO: work this function so that it handles multiple file arguments from the command line
-			// If possible, do so without creating a static variable containing either the number of
-			//      file arguments or their values
+		//TODO: work this function so that it handles multiple file arguments from the command line
+		// If possible, do so without creating a static variable containing either the number of
+		//      file arguments or their values
 
+		//TODO: support adding all media files in directory
 //			try( file = au.getFileFromPath(???))
-//			?????
-			System.out.println("File arguments on the command line have not yet been implemented.");
-			file = null;//Temporary: Just until command line arguments are implemented
-		}
+		System.out.println("File arguments on the command line have not yet been implemented.");
+		file = null;//Temporary: Just until command line arguments are implemented
+
+//		if (!file.isDirectory()) {
+//			System.out.println("Reading from: " + file.getAbsolutePath());
+//		}
+//		else { System.out.printf("Error: '%s' is a directory.\n", file.getAbsolutePath());}
 		return file;
 	}
+
+//	public static File[] getFilesToPlay(List<String> files) {
+//		File[] files = au.getFileFromPath()
+//		//		File[] getFiles-> {for(String s: arguments.getAudioFiles()){au.getFileFromPath(s);}};
+//	}
+
+	@SuppressWarnings("Convert2Diamond")
+	public static Vector<File> getFilesToPlay(CLIArguments arguments) {
+		Vector<File> filesToPlay = new Vector<File>();
+		for (String s : arguments.getAudioFiles()) {
+			File f = au.getFileFromPath(s);
+			if (f != null) {filesToPlay.add(f);}
+		}
+		return filesToPlay;
+	}
+
+	/*
+	static Vector<File> getFilesToPlay(CLIArguments arguments){
+		Vector<File> vf= new Vector<>();
+		Runnable runnable = () -> {
+			arguments.getAudioFiles().forEach((b) -> vf.add(au.getFileFromPath(b)));
+		};
+		return vf;
+	}*/
+
+	/*
+	static Vector<File> getFilesToPlay(CLIArguments arguments) {
+		Vector<File> vf = new Vector<>();
+		Runnable runnable = () -> arguments.getAudioFiles().forEach(
+			(b) -> {
+				File f = au.getFileFromPath(b);
+				if (f != null) { vf.add(f);}
+			}
+		);
+		return vf;
+	}
+	*/
+
 
 	/*
 	Play .WAV, .AU, or .AIFF files (and anything else shown by `System.out.println(Arrays.toString(AudioSystem.getAudioFileTypes()))`)
@@ -163,7 +194,6 @@ public class MicroAud {
 //		MicroAud mAud = new MicroAud();
 		AssortedUtils.logArgs(args);
 
-
 		ArgManager argManager = new ArgManager(args);
 		CLIArguments arguments = argManager.getArguments();
 
@@ -174,14 +204,28 @@ public class MicroAud {
 
 		argManager.init();
 
-		File file; // = getFile();
-		{// Temporarily hardcoded
-//			file = new File("D:/msys2_64/dir");
-//			file = new File("D:/Projects/Java/Microaud/src/main/resources/TestOgg.ogg");
-			file = new File("D:/Projects/Java/Microaud/src/main/resources/TestWav.wav");
-			System.out.println("Reading from: " + file.getAbsolutePath());
-		}
+//		File file; // = getFile();
+//		{// Temporarily hardcoded
+////			file = new File("D:/msys2_64/dir");
+////			file = new File("D:/Projects/Java/Microaud/src/main/resources/TestOgg.ogg");
+//			file = new File("D:/Projects/Java/Microaud/src/main/resources/TestWav.wav");
+//			System.out.println("Reading from: " + file.getAbsolutePath());
+//		}
 //		doAud(file);
+
+		Vector<File> filesToPlay = new Vector<>();
+		for (String s : arguments.getAudioFiles()) {
+			File f = au.getFileFromPath(s);
+			if (f != null) {filesToPlay.add(f);}
+		}
+		filesToPlay.forEach(MicroAud::doAud);
+
+
+//		getFilesToPlay(arguments).forEach(MicroAud::doAud);
+
+//		filesToPlay.addAll((a)->{for(String s: a){au.getFileFromPath(s);}});
+//		File[] getFiles-> {for(String s: arguments.getAudioFiles()){au.getFileFromPath(s);}};
+//		File[] filesToPlay = (getFiles(arguments.getAudioFiles()));
 
 	}
 }

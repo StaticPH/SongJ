@@ -1,19 +1,18 @@
 package com.StaticPH.MicroAud;
 
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.converters.FileConverter;
-
-import java.io.File;
 import java.util.List;
 
-public class CLIArguments {
-	public CLIArguments(){}// No instantiating!
+@SuppressWarnings("unused")
+class CLIArguments {
+	CLIArguments(){}// No instantiating!
 
-	@Parameter(names = {"-file", "-files"},
+
+	@Parameter(names = {"-f", "--file", "--files"},
 		description = "List of all audio files to try playing"
 	)
 	private List<String> audioFiles;
-	public List<String> getAudioFiles(){return audioFiles;}
+	List<String> getAudioFiles(){return audioFiles;}
 
 	/*
 	@Parameter(names = {"-modFolder", "-folder", "-mods"}, description = "Folder where mods will be downloaded")
@@ -28,5 +27,5 @@ public class CLIArguments {
 	*/
 	@Parameter(names = {"-help"}, description = "Displays this great message", help = true)
 	private boolean helpEnabled;
-	public boolean isHelpEnabled() { return helpEnabled;}
+	boolean isHelpEnabled() { return helpEnabled;}
 }

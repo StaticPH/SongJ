@@ -4,7 +4,7 @@ import com.beust.jcommander.JCommander;
 
 import java.util.List;
 
-@SuppressWarnings("UnnecessaryReturnStatement")
+@SuppressWarnings("ALL")
 public class ArgManager {
 	private CLIArguments arguments;
 	private JCommander jCommander;
@@ -33,7 +33,7 @@ public class ArgManager {
 
 		/*Discard any null or empty files */
 		if (fileCount > 0) {
-			AssortedUtils.filter(files, StringUtils::isNullOrEmpty);
+			AssortedUtils.inverseFilter(files, StringUtils::isNullOrEmpty);
 		}
 
 		/* If no files were given, display the program help and ignore further arguments.*/

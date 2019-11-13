@@ -69,7 +69,9 @@ final class AssortedUtils implements IFileUtils {
 	}
 
 	public File getFileFromPath(String path) {  //TODO: REVAMP ME
-		File f = new File(path);
+		//FIXME: Call me crazy, but I don't think I should be doing this just to avoid handling an IOException
+		File f = new File (new File(path).getAbsolutePath());
+
 		if (!f.exists()) {
 			System.out.println("File not found");
 			f = null;
@@ -98,6 +100,7 @@ final class AssortedUtils implements IFileUtils {
 	 * @return          Returns true if the filtering modified the Iterable; returns false otherwise
 	 *                  Always returns false if either Iterable or Predicate is null.
 	 */
+	@SuppressWarnings("UnusedReturnValue")
 	public static <T> boolean filter(Iterable<T> iterable, Predicate<? super T> comparer) {
 		boolean didModify = false;
 		if (iterable != null && comparer != null) {
@@ -116,7 +119,7 @@ final class AssortedUtils implements IFileUtils {
 	 * Filter an Iterable by applying a Predicate function to each element within.
 	 * If the predicate is true, remove the element.
 	 * <p>
-	 * This is equivalent to <code>filter(iterable, !(comparer))</code> where <code> comparer != null</code>
+	 * This is equivalent to <code>filter(iterable, comparer.negate())</code> where <code> comparer != null</code>
 	 * </p>
 	 * @param <T>       The type of object contained within the Iterable
 	 * @param iterable  An Iterable object collection to filter. May be null.
@@ -125,16 +128,20 @@ final class AssortedUtils implements IFileUtils {
 	 * @return          Returns true if the filtering modified the Iterable; returns false otherwise
 	 *                  Always returns false if either Iterable or Predicate is null.
 	 */
+	@SuppressWarnings("UnusedReturnValue")
 	public static <T> boolean inverseFilter(Iterable<T> iterable, Predicate<? super T> comparer) {
+//		boolean didModify = false;
+//		if (iterable != null && comparer != null) {
+//			for (Iterator<T> iter = iterable.iterator(); iter.hasNext(); ) {
+//				if (comparer.test(iter.next())) {
+//					iter.remove();
+//					didModify = true;
+//				}
+//			}
+//		}
+//		return didModify;
 		boolean didModify = false;
-		if (iterable != null && comparer != null) {
-			for (Iterator<T> iter = iterable.iterator(); iter.hasNext(); ) {
-				if (comparer.test(iter.next())) {
-					iter.remove();
-					didModify = true;
-				}
-			}
-		}
+		if (iterable != null && comparer != null){didModify = filter(iterable, comparer.negate());}
 		return didModify;
 	}
 }
