@@ -1,19 +1,13 @@
 package com.StaticPH.MicroAud;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Iterator;
-import java.util.Scanner;
 import java.util.function.Predicate;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.StaticPH.MicroAud.AbstractStringUtils.charToString;
 
 @SuppressWarnings({"unused", "WeakerAccess", "RedundantSuppression"})
-final class AssortedUtils implements IFileUtils {
+final class AssortedUtils {
 	// Currently this project is small enough that I don't think it worth having context-specific loggers; just use the global one
 	private static Logger loggo = Logger.getGlobal();       // NOTE: I WANT TO KEEP THIS
 	private static StringUtils su = new StringUtils();      //FIXME: do not want
@@ -35,7 +29,7 @@ final class AssortedUtils implements IFileUtils {
 
 		//These two statements could be combined, eliminating a variable, but at the cost of readability
 		String argList = su.delimitStrings(charToString(','), true, "args: [", charToString(']'), args);
-		getLogger().info(argList);
+		loggo.info(argList);
 	}
 
 	static void printn(Object... objs) {
@@ -43,43 +37,6 @@ final class AssortedUtils implements IFileUtils {
 			System.out.print(obj);
 		}
 	}
-
-	@Deprecated
-	public File getFileFromScanner() {
-		//Question: realistically could probably make this static in the interface, but should I?
-		File f;
-
-		try (Scanner userInput = new Scanner(System.in)) {
-			f = new File(userInput.next()).getCanonicalFile();
-//			f = f.getCanonicalFile();
-			loggo.info(
-//				String.format("'%s' resolved to canonical path: '%s'\n", f.getPath(), f.getCanonicalPath()) // String.format performs poorly
-				'\'' + f.getPath() + "' resolved to canonical path: '" + f.getCanonicalPath() + "'\n"
-			);
-			if (!f.exists()) {
-				loggo.info("File not found: '" + f.getCanonicalPath() + "'\n");
-				f = null;
-			}
-		}
-		catch (IOException e) {
-			loggo.log(Level.FINER, "Error constructing canonical pathname", e);
-			f = null;
-		}
-		return f;
-	}
-
-	public File getFileFromPath(String path) {  //TODO: REVAMP ME
-		//FIXME: Call me crazy, but I don't think I should be doing this just to avoid handling an IOException
-		File f = new File (new File(path).getAbsolutePath());
-
-		if (!f.exists()) {
-			System.out.println("File not found");
-			f = null;
-		}
-		return f;
-	}   //this should probably throw exceptions, not catch them
-
-	public static URL getFileURL(File f) throws MalformedURLException { return f.toURI().toURL();}
 
 /*	public static void loopClip(Clip c){
 		if (clip.isRunning())
@@ -90,15 +47,17 @@ final class AssortedUtils implements IFileUtils {
 
 	//TODO: decide between @NotNull on Predicate(and maybe Iterable) or returning false when either is null
 	// also whether to use @NotNull or call `Objects.requireNonNull(VARIABLE);` instead
+
 	/**
 	 * Filter an Iterable by applying a Predicate function to each element within.
 	 * If the predicate is false, remove the element.
-	 * @param <T>       The type of object contained within the Iterable
-	 * @param iterable  An Iterable object collection to filter. May be null.
-	 * @param comparer  A Predicate function according to which the contents of iterable should be filtered.
-	 *                  May be null.
-	 * @return          Returns true if the filtering modified the Iterable; returns false otherwise
-	 *                  Always returns false if either Iterable or Predicate is null.
+	 *
+	 * @param <T>      The type of object contained within the Iterable
+	 * @param iterable An Iterable object collection to filter. May be null.
+	 * @param comparer A Predicate function according to which the contents of iterable should be filtered.
+	 *                 May be null.
+	 * @return Returns true if the filtering modified the Iterable; returns false otherwise
+	 * Always returns false if either Iterable or Predicate is null.
 	 */
 	@SuppressWarnings("UnusedReturnValue")
 	public static <T> boolean filter(Iterable<T> iterable, Predicate<? super T> comparer) {
@@ -114,19 +73,19 @@ final class AssortedUtils implements IFileUtils {
 		return didModify;
 	}
 
-	// ???: I dont actually know if I CAN negate the predicate with !predicate
 	/**
 	 * Filter an Iterable by applying a Predicate function to each element within.
 	 * If the predicate is true, remove the element.
 	 * <p>
 	 * This is equivalent to <code>filter(iterable, comparer.negate())</code> where <code> comparer != null</code>
 	 * </p>
-	 * @param <T>       The type of object contained within the Iterable
-	 * @param iterable  An Iterable object collection to filter. May be null.
-	 * @param comparer  A Predicate function according to which the contents of iterable should be filtered.
-	 *                  May be null.
-	 * @return          Returns true if the filtering modified the Iterable; returns false otherwise
-	 *                  Always returns false if either Iterable or Predicate is null.
+	 *
+	 * @param <T>      The type of object contained within the Iterable
+	 * @param iterable An Iterable object collection to filter. May be null.
+	 * @param comparer A Predicate function according to which the contents of iterable should be filtered.
+	 *                 May be null.
+	 * @return Returns true if the filtering modified the Iterable; returns false otherwise
+	 * Always returns false if either Iterable or Predicate is null.
 	 */
 	@SuppressWarnings("UnusedReturnValue")
 	public static <T> boolean inverseFilter(Iterable<T> iterable, Predicate<? super T> comparer) {
@@ -141,9 +100,21 @@ final class AssortedUtils implements IFileUtils {
 //		}
 //		return didModify;
 		boolean didModify = false;
-		if (iterable != null && comparer != null){didModify = filter(iterable, comparer.negate());}
+		if (iterable != null && comparer != null) {didModify = filter(iterable, comparer.negate());}
 		return didModify;
 	}
+
+/*      YUNO???
+	public static <T> void toss(Iterable<T> iterable){
+		Predicate<?super T> p = new Predicate() {
+			@Override
+			public boolean test(Object o) {
+				return StringUtils.isNullOrEmpty(o.toString());
+			}
+		};
+		AssortedUtils.inverseFilter(iterable, p );
+	}
+*/
 }
 
 @SuppressWarnings("unused")

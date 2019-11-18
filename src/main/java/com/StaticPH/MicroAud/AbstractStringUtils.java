@@ -24,7 +24,7 @@ public abstract class AbstractStringUtils implements IStringUtils {
 //	@Override       // This works if I declare it as a default in the interface as opposed to a static
 //	public String charToString(char c) { return String.valueOf(c); }
 
-	static boolean isNullOrEmpty(String s){ return s == null || s.isEmpty();}
+	static boolean isNullOrEmpty(String s){ return s == null || s.isEmpty();}//|| "".equals(s)
 
 	/*
 	Question: Is it generally safe to make static any method that meets all the following criteria:

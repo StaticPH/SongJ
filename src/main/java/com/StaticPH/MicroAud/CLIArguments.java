@@ -1,18 +1,61 @@
 package com.StaticPH.MicroAud;
 
 import com.beust.jcommander.Parameter;
+
 import java.util.List;
+import java.util.Vector;
 
 @SuppressWarnings("unused")
 class CLIArguments {
 	CLIArguments(){}// No instantiating!
 
+//	public class StringListToVector implements IStringConverter<Vector<String>>{
+//		@Override
+//		public Vector<String> convert(String s){
+//
+//		}
+//	}
 
+/*
 	@Parameter(names = {"-f", "--file", "--files"},
-		description = "List of all audio files to try playing"
+		description = "List of all audio files to try playing",
+		listConverter = com.beust.jcommander.converters.FileConverter.class
 	)
-	private List<String> audioFiles;
-	List<String> getAudioFiles(){return audioFiles;}
+	private List<File> audioFiles;
+	List<File> getAudioFiles(){return audioFiles;}
+*/
+
+	// ???: what behavior does the default value of arity(-1) result in
+	//  Is an option treated as implicitly required if its names attribute is empty, or should it still be explicitly specified as true?
+	@Parameter(
+//	    names = {"-f", "--file", "--files"},    //Maybe dont use the names attribute for what is effectively a required parameter...
+		description = "List of all audio files to try playing",
+		variableArity = true
+	)
+	private List<String> __audioFiles;
+
+	private Vector<String> audioFiles = null;
+	Vector<String> getAudioFiles(){
+		if (audioFiles == null){
+			audioFiles = new Vector<>(__audioFiles);
+		}
+		return audioFiles;
+	}
+
+	// ???: What happens if @SubParameter(order < 0) ??
+
+	@Parameter(
+		names = {"-d", "--traverse"},
+		description = "Traverse through any directory arguments for additional audio files to play."
+	)
+	private boolean traverseDirectoriesEnabled = false;
+	boolean isTraverseDirectoriesEnabled(){return traverseDirectoriesEnabled;}
+
+//	@Parameter(
+//		names={"--max_count"}, description = "The maximum number of files to queue up"
+//	)
+//	private int maxCount = 20;
+//	private int getMaxCount(){return maxCount;}
 
 	/*
 	@Parameter(names = {"-modFolder", "-folder", "-mods"}, description = "Folder where mods will be downloaded")

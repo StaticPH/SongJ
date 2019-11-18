@@ -7,7 +7,14 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitOption;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Vector;
 
 
@@ -86,7 +93,7 @@ public class MicroAud {
 	public static Vector<File> getFilesToPlay(CLIArguments arguments) {
 		Vector<File> filesToPlay = new Vector<File>();
 		for (String s : arguments.getAudioFiles()) {
-			File f = au.getFileFromPath(s);
+			File f = FileUtils.getFileFromPath(s);
 			if (f != null) {filesToPlay.add(f);}
 		}
 		return filesToPlay;
@@ -115,27 +122,55 @@ public class MicroAud {
 	*/
 
 
-	/*
-	Play .WAV, .AU, or .AIFF files (and anything else shown by `System.out.println(Arrays.toString(AudioSystem.getAudioFileTypes()))`)
-	Should also support the MIDI based song file formats: SMF type 0 (Standard MIDI File, aka .mid files), SMF type 1 and RMF.
-	*/
+	/**
+	 * Play <tt>.wav</tt>, <tt>.au</tt>, or <tt>.aiff</tt> files, and anything else included in
+	 * {@link AudioSystem#getAudioFileTypes()}
+	 * <p></p>
+	 * Should also support the MIDI based song file formats:
+	 *      SMF type 0 (Standard MIDI File, aka <tt>.mid</tt> files), SMF type 1 and RMF.
+	 * @param file      A <tt>File</tt> of any supported file type
+	 *
+	 * @see AudioSystem#getAudioFileTypes()
+	 */
 	public static void playBasic(File file) {
 		try {
 			AudioInputStream ais = AudioSystem.getAudioInputStream(file);
-			Clip clip = AudioSystem.getClip();
-			clip.open(ais);
-			clip.start();
-			Thread.sleep(clip.getMicrosecondLength() / 1000);
+			try (Clip clip = AudioSystem.getClip()) {
+				clip.open(ais);
+				clip.start();
+				AssortedUtils.getLogger().info("Now playing from: \"" + file.getName() + "\"");
+				Thread.sleep(clip.getMicrosecondLength() / 1000);
+			}
 		}
 		catch (UnsupportedAudioFileException | IOException | LineUnavailableException | InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public static void playClipFromStream(AudioInputStream audIn) {
+	/**
+	 * Play audio from an <tt>InputStream</tt> opened to <tt>.wav</tt>, <tt>.au</tt>, or <tt>.aiff</tt>
+	 * files, or any other file type supported
+	 * according to {@link AudioSystem#getAudioFileTypes()}
+	 * <p></p>
+	 * Should also support an <tt>InputStream</tt> opened to MIDI based song file formats:
+	 *      SMF type 0 (Standard MIDI File, aka <tt>.mid</tt> files), SMF type 1 and RMF.
+	 *
+	 * @param audIn     An <tt>InputStream</tt> opened to a file supported by {@link AudioSystem}
+	 * @param name      Optional: name of the file audio is being played from
+	 *
+	 * @see #playBasic(File)
+	 * @see AudioSystem#getAudioFileTypes()
+	 */
+	public static void playClipFromStream(AudioInputStream audIn, String name) {
 		try (Clip clip = AudioSystem.getClip()) {
 			clip.open(audIn);
 			clip.start();
+
+			if (!StringUtils.isNullOrEmpty(name)) {
+				AssortedUtils.getLogger().info("Now playing from: \"" + name + "\"");
+			}
+			else{ AssortedUtils.getLogger().info("Now playing from unknown audio file.");}
+
 			// Main thread still dies before audio starts
 //			while (true){
 //				if (!clip.isRunning()){
@@ -152,10 +187,15 @@ public class MicroAud {
 		}
 	}
 
+	/**
+	 * @see #playClipFromStream(AudioInputStream, String) playClipFromStream(AudioInputStream, String=null)
+	 */
+	public static void playClipFromStream(AudioInputStream audIn){playClipFromStream(audIn, null);}
+
 	public static void doAud(File file) {
 		try {
 			AudioInputStream audIn = AudioSystem.getAudioInputStream(file);
-			playClipFromStream(audIn);
+			playClipFromStream(audIn, file.getName());
 		}
 		catch (UnsupportedAudioFileException | IOException e) {
 			e.printStackTrace();
@@ -191,8 +231,7 @@ public class MicroAud {
 	}*/
 
 	public static void main(String[] args) {
-//		MicroAud mAud = new MicroAud();
-		AssortedUtils.logArgs(args);
+//		AssortedUtils.logArgs(args);
 
 		ArgManager argManager = new ArgManager(args);
 		CLIArguments arguments = argManager.getArguments();
@@ -204,28 +243,15 @@ public class MicroAud {
 
 		argManager.init();
 
-//		File file; // = getFile();
-//		{// Temporarily hardcoded
-////			file = new File("D:/msys2_64/dir");
-////			file = new File("D:/Projects/Java/Microaud/src/main/resources/TestOgg.ogg");
-//			file = new File("D:/Projects/Java/Microaud/src/main/resources/TestWav.wav");
-//			System.out.println("Reading from: " + file.getAbsolutePath());
-//		}
-//		doAud(file);
+
+		//TODO: see if its feasible to provide a means of converting a wav file to a (roughly) equivalent midi file
 
 		Vector<File> filesToPlay = new Vector<>();
 		for (String s : arguments.getAudioFiles()) {
-			File f = au.getFileFromPath(s);
+			File f = FileUtils.getFileFromPath(s);
 			if (f != null) {filesToPlay.add(f);}
 		}
 		filesToPlay.forEach(MicroAud::doAud);
-
-
-//		getFilesToPlay(arguments).forEach(MicroAud::doAud);
-
-//		filesToPlay.addAll((a)->{for(String s: a){au.getFileFromPath(s);}});
-//		File[] getFiles-> {for(String s: arguments.getAudioFiles()){au.getFileFromPath(s);}};
-//		File[] filesToPlay = (getFiles(arguments.getAudioFiles()));
 
 	}
 }

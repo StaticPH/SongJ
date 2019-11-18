@@ -15,7 +15,7 @@ public interface IStringUtils {
 	static String charToString(char c) {return String.valueOf(c);}
 //	default String charToString(char c){return String.valueOf(c);}
 
-	static boolean isNullOrEmpty(String s){ return s == null || s.isEmpty();}
+	static boolean isNullOrEmpty(String s){ return s == null || s.isEmpty();}//|| "".equals(s)
 
 	/*
 	Question: Why not/use 'default' functions?
