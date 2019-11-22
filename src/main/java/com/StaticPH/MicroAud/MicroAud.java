@@ -7,14 +7,8 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitOption;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.Vector;
 
 
@@ -25,7 +19,6 @@ public class MicroAud {
 	// Question: Do I want to keep the interface, or switch to an abstract class, or even a non-abstract,
 	//           so I can use methods in a static context without a static variable of that class's type?
 	// ???: is it worth declaring them as final?
-//	private static IFileUtils Util;     //NOTE: I WANT TO GET RID OF THIS!!
 	private static final AssortedUtils au = new AssortedUtils();        //NOTE: I WANT TO GET RID OF THIS!!
 	private static final StringUtils sUtil = new StringUtils();        //NOTE: I WANT TO GET RID OF THIS!!
 
@@ -37,10 +30,6 @@ public class MicroAud {
 
 	//======= Methods =======
 
-	// Consider extracting this to AssortedUtils and simply taking a String[] parameter containing
-	// any files specified from the command line; said argument would be null in the absence of arguments
-	// Even just using the parameter mechanic would eliminate the need for this (and hasFileArgs) to be static,
-	// and possibly the existence of hasFileArgs entirely
 	@SuppressWarnings("ConstantConditions")
 	@Deprecated
 	public static File getFile() {
@@ -84,52 +73,22 @@ public class MicroAud {
 		return file;
 	}
 
-//	public static File[] getFilesToPlay(List<String> files) {
-//		File[] files = au.getFileFromPath()
-//		//		File[] getFiles-> {for(String s: arguments.getAudioFiles()){au.getFileFromPath(s);}};
-//	}
-
-	@SuppressWarnings("Convert2Diamond")
-	public static Vector<File> getFilesToPlay(CLIArguments arguments) {
-		Vector<File> filesToPlay = new Vector<File>();
-		for (String s : arguments.getAudioFiles()) {
-			File f = FileUtils.getFileFromPath(s);
-			if (f != null) {filesToPlay.add(f);}
-		}
-		return filesToPlay;
+	public static void printPlayQueue(Vector<File> filesToPlay) {
+		System.out.println("Queue: \n");
+		filesToPlay.stream()
+		           .filter(file -> file.getPath().endsWith(".wav")) //TODO: REMOVE ME!! I LIMIT THE OUTPUT TO WAV FILES
+		           .map(file -> "      " + file.getPath())
+		           .forEach(System.out::println);
 	}
-
-	/*
-	static Vector<File> getFilesToPlay(CLIArguments arguments){
-		Vector<File> vf= new Vector<>();
-		Runnable runnable = () -> {
-			arguments.getAudioFiles().forEach((b) -> vf.add(au.getFileFromPath(b)));
-		};
-		return vf;
-	}*/
-
-	/*
-	static Vector<File> getFilesToPlay(CLIArguments arguments) {
-		Vector<File> vf = new Vector<>();
-		Runnable runnable = () -> arguments.getAudioFiles().forEach(
-			(b) -> {
-				File f = au.getFileFromPath(b);
-				if (f != null) { vf.add(f);}
-			}
-		);
-		return vf;
-	}
-	*/
-
 
 	/**
 	 * Play <tt>.wav</tt>, <tt>.au</tt>, or <tt>.aiff</tt> files, and anything else included in
 	 * {@link AudioSystem#getAudioFileTypes()}
 	 * <p></p>
 	 * Should also support the MIDI based song file formats:
-	 *      SMF type 0 (Standard MIDI File, aka <tt>.mid</tt> files), SMF type 1 and RMF.
-	 * @param file      A <tt>File</tt> of any supported file type
+	 * SMF type 0 (Standard MIDI File, aka <tt>.mid</tt> files), SMF type 1 and RMF.
 	 *
+	 * @param file A <tt>File</tt> of any supported file type
 	 * @see AudioSystem#getAudioFileTypes()
 	 */
 	public static void playBasic(File file) {
@@ -153,11 +112,10 @@ public class MicroAud {
 	 * according to {@link AudioSystem#getAudioFileTypes()}
 	 * <p></p>
 	 * Should also support an <tt>InputStream</tt> opened to MIDI based song file formats:
-	 *      SMF type 0 (Standard MIDI File, aka <tt>.mid</tt> files), SMF type 1 and RMF.
+	 * SMF type 0 (Standard MIDI File, aka <tt>.mid</tt> files), SMF type 1 and RMF.
 	 *
-	 * @param audIn     An <tt>InputStream</tt> opened to a file supported by {@link AudioSystem}
-	 * @param name      Optional: name of the file audio is being played from
-	 *
+	 * @param audIn An <tt>InputStream</tt> opened to a file supported by {@link AudioSystem}
+	 * @param name  Optional: name of the file audio is being played from
 	 * @see #playBasic(File)
 	 * @see AudioSystem#getAudioFileTypes()
 	 */
@@ -169,7 +127,7 @@ public class MicroAud {
 			if (!StringUtils.isNullOrEmpty(name)) {
 				AssortedUtils.getLogger().info("Now playing from: \"" + name + "\"");
 			}
-			else{ AssortedUtils.getLogger().info("Now playing from unknown audio file.");}
+			else { AssortedUtils.getLogger().info("Now playing from unknown audio file.");}
 
 			// Main thread still dies before audio starts
 //			while (true){
@@ -190,7 +148,7 @@ public class MicroAud {
 	/**
 	 * @see #playClipFromStream(AudioInputStream, String) playClipFromStream(AudioInputStream, String=null)
 	 */
-	public static void playClipFromStream(AudioInputStream audIn){playClipFromStream(audIn, null);}
+	public static void playClipFromStream(AudioInputStream audIn) {playClipFromStream(audIn, null);}
 
 	public static void doAud(File file) {
 		try {
@@ -201,6 +159,8 @@ public class MicroAud {
 			e.printStackTrace();
 		}
 	}
+
+	public static void doAud(Path path) { doAud(path.toFile());}
 
 /*
 	//https://stackoverflow.com/a/10645913
@@ -246,46 +206,16 @@ public class MicroAud {
 
 		//TODO: see if its feasible to provide a means of converting a wav file to a (roughly) equivalent midi file
 
-		Vector<File> filesToPlay = new Vector<>();
-		for (String s : arguments.getAudioFiles()) {
-			File f = FileUtils.getFileFromPath(s);
-			if (f != null) {filesToPlay.add(f);}
-		}
-		filesToPlay.forEach(MicroAud::doAud);
+		Vector<File> filesToPlay = new Vector<>(arguments.getAudioFiles());
+//		FileUtils.expandFileList(filesToPlay, false, 0);
+//		for (String s : arguments.getAudioFiles()) {
+//			File f = FileUtils.getFileFromPath(s);
+//			if (f != null) {filesToPlay.add(f);}
+//		}
+
+
+		printPlayQueue(filesToPlay);
+//		filesToPlay.forEach(MicroAud::doAud);
 
 	}
 }
-
-/*
-OUTSIDE CALLS TO NON-STATIC METHODS MUST** BE CALLED USING AN INSTANCE OF THEIR CLASS
-ex:
-	class Foobar{
-		public void foo(){
-		  //do stuff
-		}
-	}
-	class Main{
-		public static void main(String[] args){
-			Foobar bar = new Foobar();
-			bar.foo();
-		}
-	}
-
-
-** THE EXCEPTION TO THIS IS WHEN EXTENDING AN ABSTRACT CLASS;
-	IN ORDER TO USE A METHOD IMPLEMENTATION DESCRIBED WITHIN THE ABSTRACT CLASS, THAT METHOD MUST BE CALLED USING THE
-	NAME OF THE ABSTRACT CLASS.
-	IF TRYING TO USE AN IMPLEMENTATION FROM AN OVERRIDE, THIS CASE DOES NOT APPLY.
-ex:
-	abstract class Foobar{
-		public void foo(){
-		  //do stuff, has actual implementation
-		}
-	}
-	class Main extends Foobar{
-		public static void main(String[] args){
-			Foobar.foo();
-		}
-	}
-
-*/
