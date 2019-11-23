@@ -10,9 +10,6 @@ public class ArgManager {
 	private CLIArguments arguments;
 	private JCommander jCommander;
 
-//	public int fileCount = 0;
-//	public Vector<File> files; //TODO: Should I allow duplicate files?
-
 	public CLIArguments getArguments() { return arguments;}
 
 	public JCommander getJCommander() { return jCommander;}
@@ -32,28 +29,28 @@ public class ArgManager {
 		Vector<File> files = arguments.getAudioFiles();  //Try to remove this
 		int fileCount = files.size();
 
-		/*
-		Traverses directories and expands the file list accordingly when enabled
-		Should also discard any null or empty files; null instantiated File objects don't even seem possible though
-		 */
-		if (fileCount > 0) {
-			//TODO: I'd love to be able to move this to occur later on, after any directory searching
-			//Interestingly, "" appears to be a valid file path; it seems to be equivalent to "."?
-			// Not sure if this is desirable behavior, so for now it's getting discarded
-			AssortedUtils.inverseFilter(files, f -> StringUtils.isNullOrEmpty(f.getPath()));
+		// Directory traversal is handled during the first call to arguments.getAudioFiles();
+		// TODO: create and call some function that will check for the existence of every file in getAudioFiles, and remove those that dont exist
+		//  May want that to occur in CLIArguments too, although having directory traversal occur there already feels rather out of place
 
-			//FIXME: This kinda feels like bad practice to do...
-			files = FileUtils.expandFileList(files, arguments.isDirectoryTraversalEnabled(), arguments.getMaxDepth());
-			//???: May want to just expand the file list when its initially converted from a List to a Vector
-			arguments.setAudioFiles(files);
-			// can probably refactor everything above this within the if statement into a separate method, and replace files.size() below with arguments.getAudioFiles().size(); is it worth it?
+		/*alternatively:
+		move both ArgManager and CLIArguments into a sub-package
+		create a public method here, evalFileArgs()
+		create a package-private method setAudioFiles(Vector<File> files) in CLIArguments
+		evalFileArgs handles the expansion, file validation, and removal of invalid files
+		it then uses its package-access to setAudioFiles
+
+		*/
+		/*
+		if (fileCount > 0) {
+			// Should I filter out unsupported file types here, or elsewhere?
 			fileCount = files.size();
 
 			if (fileCount == 0) {
 				System.err.println("No supported files found within provided arguments");
 			}
 		}
-
+		*/
 		/* If no files were given, display the program help and ignore further arguments.*/
 		if (fileCount == 0) {
 			getJCommander().usage();

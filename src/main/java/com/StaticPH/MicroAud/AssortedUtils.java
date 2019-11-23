@@ -4,13 +4,10 @@ import java.util.Iterator;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
-import static com.StaticPH.MicroAud.AbstractStringUtils.charToString;
-
 @SuppressWarnings({"unused", "WeakerAccess", "RedundantSuppression"})
-final class AssortedUtils {
+public final class AssortedUtils {
 	// Currently this project is small enough that I don't think it worth having context-specific loggers; just use the global one
 	private static Logger loggo = Logger.getGlobal();       // NOTE: I WANT TO KEEP THIS
-	private static StringUtils su = new StringUtils();      //FIXME: do not want
 
 	// I need to either allow instantiation, make all the methods static, or not make the class final so that I can subclass it
 //	private AssortedUtils() {}//no instantiating
@@ -21,14 +18,8 @@ final class AssortedUtils {
 	//TODO: public, ?ideally non-static?, method that sets filter level for loggo
 
 	public static void logArgs(String[] args) {
-		// FIXME:   I REALLY WANT THIS TO BE `StringUtils.delimitStrings(` !!!
-		// ???: Do I accomplish this by making delimitStrings static?
-		//      Do I leave it as is?
-		//      Do I remove the private static sUtil variable from the class scope,
-		//          and instead create a method-scoped instance variable of StringUtils every time I call this method?
-
 		//These two statements could be combined, eliminating a variable, but at the cost of readability
-		String argList = su.delimitStrings(charToString(','), true, "args: [", charToString(']'), args);
+		String argList = StringUtils.delimitStrings(",", true, "args: [", "]", args);
 		loggo.info(argList);
 	}
 
@@ -37,13 +28,6 @@ final class AssortedUtils {
 			System.out.print(obj);
 		}
 	}
-
-/*	public static void loopClip(Clip c){
-		if (clip.isRunning())
-			clip.stop();   // Stop the player if it is still running
-		clip.setFramePosition(0); // rewind to the beginning
-		clip.start();     // Start playing
-	}*/
 
 	//TODO: decide between @NotNull on Predicate(and maybe Iterable) or returning false when either is null
 	// also whether to use @NotNull or call `Objects.requireNonNull(VARIABLE);` instead
@@ -115,24 +99,4 @@ final class AssortedUtils {
 		AssortedUtils.inverseFilter(iterable, p );
 	}
 */
-}
-
-@SuppressWarnings("unused")
-class MathUtils {
-	private MathUtils() {}
-
-	public static boolean isOdd(int n) {return (n % 2) != 0;}
-
-	public static boolean isOdd(long n) {return (n % 2) != 0;}
-
-	public static boolean isEven(int n) {return (n % 2) == 0;}
-
-	public static boolean isEven(long n) {return (n % 2) == 0;}
-
-	//	double nthRoot (const double rootOf, const int nth) {return Math.pow (rootOf, 1.0 / nth);}
-}
-
-final class StringUtils extends AbstractStringUtils {
-	//Change nothing from the abstract class, but allow instantiation in order to access non-static methods
-	StringUtils() {}
 }

@@ -41,16 +41,32 @@ class CLIArguments {
 
 	private Vector<File> audioFiles = null;
 
-	Vector<File> getAudioFiles() {
+	/*
+	On first call, initializes the audioFiles Vector from the contents of the __audioFiles List
+	If traverseDirectoriesEnabled == true, also traverses up to maxDepth directory levels, adding discovered files to the audioFiles Vector
+	Returns that audioFiles Vector on subsequent calls
+	 */
+	public Vector<File> getAudioFiles() {
 		//TODO: May want to expand the file list here instead of during ArgManager.BaseBehavior
 		//  Doing so would eliminate the need to allow other classes to modify audioFiles
 		if (audioFiles == null) {
+			/*
+			Interestingly, "" appears to be a valid file path; it seems to be equivalent to "."?
+			Not sure if this is desirable behavior, so for now it's getting discarded
+			Other odd observations:
+			  Using '' as a file parameter on the commandline gets interpreted as '' by the parser instead of "", but the resulting exception is not fatal
+			  Java has decided not to escape spaces(even those explicitly escaped) in command line parameters enclosed in single-quotes, AND
+			    throws a fatal exception upon encountering a colon in such a parameter
+			 */
+			AssortedUtils.inverseFilter(__audioFiles, f -> StringUtils.isNullOrEmpty(f.getPath()));
+
 			audioFiles = new Vector<>(__audioFiles);
+			audioFiles = FileUtils.expandFileList(audioFiles, isDirectoryTraversalEnabled(), getMaxDepth());
 		}
 		return audioFiles;
 	}
 
-	void setAudioFiles(Vector<File> files) { audioFiles = files;}
+//	void setAudioFiles(Vector<File> files) { audioFiles = files;}
 
 
 	// ???: What happens if @SubParameter(order < 0) ??

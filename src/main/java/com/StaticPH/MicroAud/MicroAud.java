@@ -1,9 +1,9 @@
 package com.StaticPH.MicroAud;
 
+import com.StaticPH.MicroAud.audioPlayer.BasicAudioPlayer;
+
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +20,6 @@ public class MicroAud {
 	//           so I can use methods in a static context without a static variable of that class's type?
 	// ???: is it worth declaring them as final?
 	private static final AssortedUtils au = new AssortedUtils();        //NOTE: I WANT TO GET RID OF THIS!!
-	private static final StringUtils sUtil = new StringUtils();        //NOTE: I WANT TO GET RID OF THIS!!
 
 
 	//======= Instance (Non-Static) Variables =======
@@ -81,79 +80,10 @@ public class MicroAud {
 		           .forEach(System.out::println);
 	}
 
-	/**
-	 * Play <tt>.wav</tt>, <tt>.au</tt>, or <tt>.aiff</tt> files, and anything else included in
-	 * {@link AudioSystem#getAudioFileTypes()}
-	 * <p></p>
-	 * Should also support the MIDI based song file formats:
-	 * SMF type 0 (Standard MIDI File, aka <tt>.mid</tt> files), SMF type 1 and RMF.
-	 *
-	 * @param file A <tt>File</tt> of any supported file type
-	 * @see AudioSystem#getAudioFileTypes()
-	 */
-	public static void playBasic(File file) {
-		try {
-			AudioInputStream ais = AudioSystem.getAudioInputStream(file);
-			try (Clip clip = AudioSystem.getClip()) {
-				clip.open(ais);
-				clip.start();
-				AssortedUtils.getLogger().info("Now playing from: \"" + file.getName() + "\"");
-				Thread.sleep(clip.getMicrosecondLength() / 1000);
-			}
-		}
-		catch (UnsupportedAudioFileException | IOException | LineUnavailableException | InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Play audio from an <tt>InputStream</tt> opened to <tt>.wav</tt>, <tt>.au</tt>, or <tt>.aiff</tt>
-	 * files, or any other file type supported
-	 * according to {@link AudioSystem#getAudioFileTypes()}
-	 * <p></p>
-	 * Should also support an <tt>InputStream</tt> opened to MIDI based song file formats:
-	 * SMF type 0 (Standard MIDI File, aka <tt>.mid</tt> files), SMF type 1 and RMF.
-	 *
-	 * @param audIn An <tt>InputStream</tt> opened to a file supported by {@link AudioSystem}
-	 * @param name  Optional: name of the file audio is being played from
-	 * @see #playBasic(File)
-	 * @see AudioSystem#getAudioFileTypes()
-	 */
-	public static void playClipFromStream(AudioInputStream audIn, String name) {
-		try (Clip clip = AudioSystem.getClip()) {
-			clip.open(audIn);
-			clip.start();
-
-			if (!StringUtils.isNullOrEmpty(name)) {
-				AssortedUtils.getLogger().info("Now playing from: \"" + name + "\"");
-			}
-			else { AssortedUtils.getLogger().info("Now playing from unknown audio file.");}
-
-			// Main thread still dies before audio starts
-//			while (true){
-//				if (!clip.isRunning()){
-//					break;
-//				}
-//			}
-
-			// Keeps main thread alive while audio plays
-			try { Thread.sleep(clip.getMicrosecondLength() / 1000);}
-			catch (InterruptedException e) { e.printStackTrace();}
-		}
-		catch (LineUnavailableException | IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * @see #playClipFromStream(AudioInputStream, String) playClipFromStream(AudioInputStream, String=null)
-	 */
-	public static void playClipFromStream(AudioInputStream audIn) {playClipFromStream(audIn, null);}
-
 	public static void doAud(File file) {
 		try {
 			AudioInputStream audIn = AudioSystem.getAudioInputStream(file);
-			playClipFromStream(audIn, file.getName());
+			BasicAudioPlayer.playClipFromStream(audIn, file.getName());
 		}
 		catch (UnsupportedAudioFileException | IOException e) {
 			e.printStackTrace();
@@ -203,7 +133,6 @@ public class MicroAud {
 
 		argManager.init();
 
-
 		//TODO: see if its feasible to provide a means of converting a wav file to a (roughly) equivalent midi file
 
 		Vector<File> filesToPlay = new Vector<>(arguments.getAudioFiles());
@@ -215,7 +144,7 @@ public class MicroAud {
 
 
 		printPlayQueue(filesToPlay);
-//		filesToPlay.forEach(MicroAud::doAud);
+		filesToPlay.forEach(MicroAud::doAud);
 
 	}
 }

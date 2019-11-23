@@ -1,11 +1,15 @@
 package com.StaticPH.MicroAud;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -23,6 +27,7 @@ public final class FileUtils {
 	public static void disableLogging() {loggo.setFilter(record -> false);}
 
 	public static boolean fileExists(File f) {return f != null && f.exists();}
+	public static boolean fileExists(Path p) {return Files.exists(p);}
 
 	@Deprecated
 	public static File getFileFromScanner() {
@@ -66,8 +71,10 @@ public final class FileUtils {
 
 	public static URL getFileURL(File f) throws MalformedURLException { return f.toURI().toURL();}
 
+	public static boolean isDirectory(File file) {return Files.isDirectory(file.toPath());}
+
 	public static boolean isDirectory(String path) {return Files.isDirectory(new File(path).toPath());}
-//	public static boolean isDirectory(String path){return new File(path).isDirectory();} //???: which method is better?
+//	public static boolean isDirectory(String path){return new File(path).isDirectory();} //???: which of these two methods is better?
 
 	/**
 	 * @deprecated Use {@link #expandFileList(Vector, boolean, int)} instead
@@ -138,12 +145,16 @@ public final class FileUtils {
 		}
 		// Ensure that any directories that found their way into the expanded file list get removed;
 		// doing it this way feels a little sloppy, but maybe it'll be improved at a later date.
-		paths.removeIf(path -> Files.isDirectory(path));
+		paths.removeIf(path -> Files.isDirectory(path));//???:not sure how this actually changes anything in expandedFiles...
 		/*
 		When traversing directories, adding EVERYTHING to the expanded list will result in duplicate entries for any non-directory file parameters
 		So don't do this:
 		paths.forEach(path -> expandedFiles.add(path.toFile()));
 		*/
+
+		//Maybe I should have a call here to a function that validates the existence of each file?
+		// something like expandedFiles = removeInvalidFiles(expandedFiles)?
+		// ... or just run some kind of removeIf() with an internal function call that does the validation
 		return expandedFiles;
 	}
 }
