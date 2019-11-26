@@ -13,7 +13,19 @@ import java.io.IOException;
 
 //java.util.Vector is a good conceptual example of a class that extends an abstract class
 
-public class BasicAudioPlayer extends AbstractAudioPlayer{
+@SuppressWarnings("unused")
+public class BasicAudioPlayer extends AbstractAudioPlayer {
+	public BasicAudioPlayer() {}
+
+	/* I dont think I really WANT this to be static?
+		feels like doing so would risk the program attempting to play all files at once or something equally undesirable
+		(Which I MIGHT still like to be POSSIBLE by giving each instance of a player its own playback thread,
+		as opposed to having all players of a particular type share 1, or all players of all types)
+
+		IDEALLY I'd be able to somehow instruct the program to use a particular implementation
+		???:Some sort of factory perhaps?
+	 */
+
 	/**
 	 * Play <tt>.wav</tt>, <tt>.au</tt>, or <tt>.aiff</tt> files, and anything else included in
 	 * {@link AudioSystem#getAudioFileTypes()}
@@ -24,18 +36,31 @@ public class BasicAudioPlayer extends AbstractAudioPlayer{
 	 * @param file A <tt>File</tt> of any supported file type
 	 * @see AudioSystem#getAudioFileTypes()
 	 */
-	public void playFile(File file) {
-		try {
-			AudioInputStream ais = AudioSystem.getAudioInputStream(file);
-			try (Clip clip = AudioSystem.getClip()) {
-				clip.open(ais);
-				clip.start();
-				AssortedUtils.getLogger().info("Now playing from: \"" + file.getName() + "\"");
-				Thread.sleep(clip.getMicrosecondLength() / 1000);
-			}
-		}
-		catch (UnsupportedAudioFileException | IOException | LineUnavailableException | InterruptedException e) {
-			e.printStackTrace();
+	@SuppressWarnings("DanglingJavadoc")
+	@Override
+	public void playFile(File file) {// throws UnsupportedAudioFileException {
+//		try {
+//			AudioInputStream ais = AudioSystem.getAudioInputStream(file);
+//			try (Clip clip = AudioSystem.getClip()) {
+//				clip.open(ais);
+//				clip.start();
+//				AssortedUtils.getLogger().info("Now playing from: \"" + file.getName() + "\"");
+//				Thread.sleep(clip.getMicrosecondLength() / 1000);
+//			}
+//		}
+//		catch (UnsupportedAudioFileException | IOException | LineUnavailableException | InterruptedException e) {
+//			e.printStackTrace();
+//		}
+		/**
+		 * Throws IOException by way of <tt>reader.getAudioInputStream(file)</tt>
+		 * at line 1181 of {@link AudioSystem#getAudioInputStream(File)}
+		 * That function (reader.getAudioInputStream) is then defined in different FileReader implementations
+		 */
+		try { playClipFromStream(AudioSystem.getAudioInputStream(file), file.getName());}
+		catch (IOException e) { e.printStackTrace();}
+		catch (UnsupportedAudioFileException e) {
+//			throw new UnsupportedAudioFileException(getUnsupportedAudioFileMessage(file.getName()));
+			System.out.println(getUnsupportedAudioFileMessage(file.getName()));
 		}
 	}
 
@@ -52,15 +77,14 @@ public class BasicAudioPlayer extends AbstractAudioPlayer{
 	 * @see #playFile(File)
 	 * @see AudioSystem#getAudioFileTypes()
 	 */
-	public static void playClipFromStream(AudioInputStream audIn, String name) {
+	private static void playClipFromStream(AudioInputStream audIn, String name) {
 		try (Clip clip = AudioSystem.getClip()) {
 			clip.open(audIn);
 			clip.start();
 
-			if (!StringUtils.isNullOrEmpty(name)) {
-				AssortedUtils.getLogger().info("Now playing from: \"" + name + "\"");
-			}
-			else { AssortedUtils.getLogger().info("Now playing from unknown audio file.");}
+			AssortedUtils.getLogger().info(
+				"Now playing from: \"" + (StringUtils.isNullOrEmpty(name) ? "unknown audio file." : name) + "\""
+			);
 
 			// Main thread still dies before audio starts
 //			while (true){
@@ -73,7 +97,15 @@ public class BasicAudioPlayer extends AbstractAudioPlayer{
 
 			//TODO: switch to giving each player its own thread, or using a single thread shared between players,
 			// but distinct from the program's main thread
-			try { Thread.sleep(clip.getMicrosecondLength() / 1000);}
+			try {
+				Thread.sleep(clip.getMicrosecondLength() / 1000);
+				System.err.println(
+					"ATTN: Finished playing from: \"" +
+					(StringUtils.isNullOrEmpty(name) ? "unknown audio file." : name)
+					+ "\""
+				);
+
+			}
 			catch (InterruptedException e) { e.printStackTrace();}
 		}
 		catch (LineUnavailableException | IOException e) {
@@ -82,10 +114,11 @@ public class BasicAudioPlayer extends AbstractAudioPlayer{
 	}
 
 	/**
-	 * @see #playClipFromStream(AudioInputStream, String) playClipFromStream(AudioInputStream, String = null)
+	 * @see #playClipFromStream(AudioInputStream, String) playClipFromStream(AudioInputStream, String&nbsp;=&nbsp;null)
+	 * @deprecated Please call {@link #playFile(File)} instead
 	 */
 	@Deprecated
-	public void playClipFromStream(AudioInputStream audIn) {playClipFromStream(audIn, null);}
+	private void playClipFromStream(AudioInputStream audIn) {playClipFromStream(audIn, null);}
 
 /*	public void loopClip(Clip c){
 		if (clip.isRunning())

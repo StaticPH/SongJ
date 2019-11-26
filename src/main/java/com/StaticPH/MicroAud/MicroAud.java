@@ -1,12 +1,11 @@
 package com.StaticPH.MicroAud;
 
+import com.StaticPH.MicroAud.audioPlayer.AbstractAudioPlayer;
 import com.StaticPH.MicroAud.audioPlayer.BasicAudioPlayer;
+import com.StaticPH.MicroAud.audioPlayer.Mp3AudioPlayer;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Vector;
@@ -72,22 +71,32 @@ public class MicroAud {
 		return file;
 	}
 
+	//	@SuppressWarnings("CodeBlock2Expr")
 	public static void printPlayQueue(Vector<File> filesToPlay) {
-		System.out.println("Queue: \n");
+		//Could technically use a Collection<File> instead
+		System.out.println("Queue" + "(length prior to type filtering: " + filesToPlay.size() + "): \n");
 		filesToPlay.stream()
-		           .filter(file -> file.getPath().endsWith(".wav")) //TODO: REMOVE ME!! I LIMIT THE OUTPUT TO WAV FILES
-		           .map(file -> "      " + file.getPath())
-		           .forEach(System.out::println);
+//		           .filter(file -> {
+//			           return file.getPath().endsWith(".wav");
+//		           }) //TODO: REMOVE ME!! I LIMIT THE OUTPUT TO WAV FILES
+                   .map(file -> "      " + file.getPath())
+                   .forEach(System.out::println);
 	}
 
 	public static void doAud(File file) {
 		try {
-			AudioInputStream audIn = AudioSystem.getAudioInputStream(file);
-			BasicAudioPlayer.playClipFromStream(audIn, file.getName());
+			AbstractAudioPlayer a;
+			//FIXME: TEMPORARY! REPLACE WITH FACTORY ASAP!
+			if (file.getPath().endsWith(".mp3")) {
+				a = new Mp3AudioPlayer();
+			}
+			else {
+				a = new BasicAudioPlayer();
+			}
+			System.out.println("ATTN: NOW \"" + file.getPath() + "\" IS SUPPOSED TO BE PLAYING");
+			a.playFile(file);
 		}
-		catch (UnsupportedAudioFileException | IOException e) {
-			e.printStackTrace();
-		}
+		catch (UnsupportedAudioFileException e) { e.printStackTrace();}
 	}
 
 	public static void doAud(Path path) { doAud(path.toFile());}
@@ -136,15 +145,12 @@ public class MicroAud {
 		//TODO: see if its feasible to provide a means of converting a wav file to a (roughly) equivalent midi file
 
 		Vector<File> filesToPlay = new Vector<>(arguments.getAudioFiles());
-//		FileUtils.expandFileList(filesToPlay, false, 0);
-//		for (String s : arguments.getAudioFiles()) {
-//			File f = FileUtils.getFileFromPath(s);
-//			if (f != null) {filesToPlay.add(f);}
-//		}
 
+		if (arguments.isPlaybackDisabled()) {AssortedUtils.getLogger().info("Playback Disabled");}
 
 		printPlayQueue(filesToPlay);
-		filesToPlay.forEach(MicroAud::doAud);
-
+		if (!arguments.isPlaybackDisabled()) {
+			filesToPlay.forEach(MicroAud::doAud);
+		}
 	}
 }

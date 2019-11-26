@@ -29,21 +29,10 @@ public class ArgManager {
 		Vector<File> files = arguments.getAudioFiles();  //Try to remove this
 		int fileCount = files.size();
 
-		// Directory traversal is handled during the first call to arguments.getAudioFiles();
-		// TODO: create and call some function that will check for the existence of every file in getAudioFiles, and remove those that dont exist
-		//  May want that to occur in CLIArguments too, although having directory traversal occur there already feels rather out of place
-
-		/*alternatively:
-		move both ArgManager and CLIArguments into a sub-package
-		create a public method here, evalFileArgs()
-		create a package-private method setAudioFiles(Vector<File> files) in CLIArguments
-		evalFileArgs handles the expansion, file validation, and removal of invalid files
-		it then uses its package-access to setAudioFiles
-
-		*/
+		// Directory traversal and file list cleanup is handled during the first call to arguments.getAudioFiles();
 		/*
 		if (fileCount > 0) {
-			// Should I filter out unsupported file types here, or elsewhere?
+			// TODO: Should I filter out unsupported file types here, or elsewhere?
 			fileCount = files.size();
 
 			if (fileCount == 0) {

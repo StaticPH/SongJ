@@ -18,21 +18,14 @@ class CLIArguments {
 //		}
 //	}
 
-/*
-	@Parameter(names = {"-f", "--file", "--files"},
-		description = "List of all audio files to try playing",
-		listConverter = com.beust.jcommander.converters.FileConverter.class
-	)
-	private List<File> audioFiles;
-	List<File> getAudioFiles(){return audioFiles;}
-*/
 
 	// ???: what behavior does the default value of arity(-1) result in
 	//  Is an option treated as implicitly required if its names attribute is empty, or should it still be explicitly specified as true?
+	// ???: What happens if @SubParameter(order < 0) ??
 
 
 	@Parameter(
-		description = "List of all audio files to try playing",
+		description = "List of all audio files to try playing", //consider saying something about directory parameters
 		variableArity = true,
 		converter = FileConverter.class
 	)
@@ -47,8 +40,16 @@ class CLIArguments {
 	Returns that audioFiles Vector on subsequent calls
 	 */
 	public Vector<File> getAudioFiles() {
-		//TODO: May want to expand the file list here instead of during ArgManager.BaseBehavior
-		//  Doing so would eliminate the need to allow other classes to modify audioFiles
+		/*
+		Though I like that handling file list expansion here removes the need for a setAudioFiles method,
+		it also doesn't quite feel like it belongs here. Maybe instead:
+			move both ArgManager and CLIArguments into a sub-package
+			create a public method here, evalFileArgs()
+			create a package-private method setAudioFiles(Vector<File> files) in CLIArguments
+			evalFileArgs handles the expansion, file validation, and removal of invalid files
+			it then uses its package-access to setAudioFiles
+		*/
+
 		if (audioFiles == null) {
 			/*
 			Interestingly, "" appears to be a valid file path; it seems to be equivalent to "."?
@@ -58,7 +59,7 @@ class CLIArguments {
 			  Java has decided not to escape spaces(even those explicitly escaped) in command line parameters enclosed in single-quotes, AND
 			    throws a fatal exception upon encountering a colon in such a parameter
 			 */
-			AssortedUtils.inverseFilter(__audioFiles, f -> StringUtils.isNullOrEmpty(f.getPath()));
+			AssortedUtils.inverseFilter(__audioFiles, f -> StringUtils.isNullOrBlank(f.getPath()));
 
 			audioFiles = new Vector<>(__audioFiles);
 			audioFiles = FileUtils.expandFileList(audioFiles, isDirectoryTraversalEnabled(), getMaxDepth());
@@ -67,9 +68,6 @@ class CLIArguments {
 	}
 
 //	void setAudioFiles(Vector<File> files) { audioFiles = files;}
-
-
-	// ???: What happens if @SubParameter(order < 0) ??
 
 
 	@Parameter(
@@ -112,4 +110,15 @@ class CLIArguments {
 	private boolean helpEnabled;
 
 	boolean isHelpEnabled() { return helpEnabled;}
+
+	/*============ HIDDEN PARAMETERS ============*/
+
+	@Parameter(
+		names = {"--list-only"}, hidden = true,
+		description = "Whether to only display the final play queue, and not attempt to play anything."
+	)
+	private boolean disablePlayback = false;
+
+	boolean isPlaybackDisabled() {return disablePlayback;}
+
 }

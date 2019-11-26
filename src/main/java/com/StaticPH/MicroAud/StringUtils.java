@@ -23,6 +23,7 @@ public class StringUtils {
 //	public String charToString(char c) { return String.valueOf(c); }
 
 	public static boolean isNullOrEmpty(String s){ return s == null || s.isEmpty();}//|| "".equals(s)
+	public static boolean isNullOrBlank(String s){ return s == null || s.trim().isEmpty();} //Formerly isNullOrKindaEmpty
 
 	/*
 	Question: Is it generally safe to make static any method that meets all the following criteria:

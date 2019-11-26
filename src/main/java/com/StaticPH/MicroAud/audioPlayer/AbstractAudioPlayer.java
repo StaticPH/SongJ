@@ -1,5 +1,6 @@
 package com.StaticPH.MicroAud.audioPlayer;
 
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 
 
@@ -20,11 +21,24 @@ import java.io.File;
  * implementation.<p>
  */
 public abstract class AbstractAudioPlayer implements IAudioPlayer{
+	/*
+	???: TODO: Do i make this extend some arbitrary type so that I can create ALL players like
+		AnyPlayer player = specificPlayer();
+	or what?
+	 */
+
 	/**
 	 * Sole constructor.  (For invocation by subclass constructors, typically
 	 * implicit.)
 	 */
 //	protected AbstractAudioPlayer(){} // Not really meaningful unless an extending Player requires a constructor with a parameter
 
-	public abstract void playFile(File file);
+	public abstract void playFile(File file) throws UnsupportedAudioFileException;
+
+	final String getUnsupportedAudioFileMessage(String filename){
+		return "UnsupportedAudioFileException: \"" + filename + "\" is not a supported audio file.\n" +
+//		return "\"" + filename + "\" is not a supported audio file.\n" +
+		       "If the file extension gives the appearance of a supported file type, " +
+		       "verify that its file signature matches the magic bytes for the file type associated with the extension.";
+	}
 }
