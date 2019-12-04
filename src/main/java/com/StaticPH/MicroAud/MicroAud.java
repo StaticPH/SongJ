@@ -2,7 +2,9 @@ package com.StaticPH.MicroAud;
 
 import com.StaticPH.MicroAud.audioPlayer.AbstractAudioPlayer;
 import com.StaticPH.MicroAud.audioPlayer.BasicAudioPlayer;
-import com.StaticPH.MicroAud.audioPlayer.Mp3AudioPlayer;
+//import com.StaticPH.MicroAud.audioPlayer.Mp3AudioPlayer;
+import com.StaticPH.MicroAud.audioPlayer.OggPlayer2;
+//import com.StaticPH.MicroAud.audioPlayer.VorbisPlayer;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
@@ -13,20 +15,20 @@ import java.util.Vector;
 
 @SuppressWarnings({"WeakerAccess", "unused", "RedundantSuppression"})
 public class MicroAud {
-	/* ======= Class (Static) Variables ======= */
+	// ======= Class (Static) Variables ======= //
 
 	// Question: Do I want to keep the interface, or switch to an abstract class, or even a non-abstract,
 	//           so I can use methods in a static context without a static variable of that class's type?
 	// ???: is it worth declaring them as final?
-	private static final AssortedUtils au = new AssortedUtils();        //NOTE: I WANT TO GET RID OF THIS!!
+//	private static final AssortedUtils au = new AssortedUtils();        //NOTE: I WANT TO GET RID OF THIS!!
 
 
-	//======= Instance (Non-Static) Variables =======
+	// ======= Instance (Non-Static) Variables ======= //
 
-	//======= Class Constructors =======
+	// ======= Class Constructors ======= //
 	public MicroAud() {}
 
-	//======= Methods =======
+	// ======= Methods ======= //
 
 	@SuppressWarnings("ConstantConditions")
 	@Deprecated
@@ -87,9 +89,14 @@ public class MicroAud {
 		try {
 			AbstractAudioPlayer a;
 			//FIXME: TEMPORARY! REPLACE WITH FACTORY ASAP!
-			if (file.getPath().endsWith(".mp3")) {
-				a = new Mp3AudioPlayer();
-			}
+//			if (file.getPath().endsWith(".mp3")) {
+//				a = new Mp3AudioPlayer();
+//			}
+////			else if(file.getPath().endsWith(".ogg")){
+////
+////			}
+//			if(file.getPath().endsWith(".ogg")){ a = new VorbisPlayer();}
+			if(file.getPath().endsWith(".ogg")){ a = new OggPlayer2();}
 			else {
 				a = new BasicAudioPlayer();
 			}

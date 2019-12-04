@@ -35,6 +35,10 @@ public class Mp3AudioPlayer extends AbstractAudioPlayer {
 		playMp3File(file, 0, Integer.MAX_VALUE, listener);
 	}
 
+//	@Override
+//	public String durationToString(long u_sec, boolean show_ms) {
+//		return "Unfortunately, mp3 files do not currently provide access to their duration";
+//	}
 
 	public void playMp3File(File mp3, int start, int end, ExtendedPlaybackListener listener) {
 		try {

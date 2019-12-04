@@ -77,14 +77,15 @@ public class BasicAudioPlayer extends AbstractAudioPlayer {
 	 * @see #playFile(File)
 	 * @see AudioSystem#getAudioFileTypes()
 	 */
-	private static void playClipFromStream(AudioInputStream audIn, String name) {
+	private void playClipFromStream(AudioInputStream audIn, String name) {
+//		audIn.getFormat()
 		try (Clip clip = AudioSystem.getClip()) {
 			clip.open(audIn);
-			clip.start();
-
 			AssortedUtils.getLogger().info(
-				"Now playing from: \"" + (StringUtils.isNullOrEmpty(name) ? "unknown audio file." : name) + "\""
+				"Now playing from: \"" + (StringUtils.isNullOrEmpty(name) ? "unknown audio file." : name)
+				+ "\"\nDuration: " + duration(clip)
 			);
+			clip.start();
 
 			// Main thread still dies before audio starts
 //			while (true){
@@ -104,7 +105,7 @@ public class BasicAudioPlayer extends AbstractAudioPlayer {
 					(StringUtils.isNullOrEmpty(name) ? "unknown audio file." : name)
 					+ "\""
 				);
-
+//				clip.close();   //Should autoclose, as Clip ultimately extends AutoClosable
 			}
 			catch (InterruptedException e) { e.printStackTrace();}
 		}

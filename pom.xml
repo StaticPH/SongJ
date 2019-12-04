@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -43,13 +42,16 @@
 	<!--OPTIONAL: When unspecified, 'jar' is the default packaging method.-->
 	<!--Replace 'jar' with 'pom' for the top level pom.xml file in multi-module projects.-->
 	<packaging>jar</packaging>
-	
+
+	<!-- Installed Maven plugins at .m2/repository/org/apache/maven/plugins -->
 
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<!--version 3.1 is just the version bundled in with intellij at the moment-->
+				<version>3.1</version>
 				<!--
 				Why on Earth is this defaulting to Java 5 anyways?!?!
 				Java 5 is HOW MANY years out of date now?? Extended support for it ended in April of 2015!!
@@ -63,22 +65,45 @@
 					<target>8</target>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.7</version>
+			</plugin>
 		</plugins>
 	</build>
 
-<!--	This should also work as an alternative to to adjusting things under <build>-->
-<!--	<properties>-->
-<!--		<maven.compiler.source>1.8</maven.compiler.source>-->
-<!--		<maven.compiler.target>1.8</maven.compiler.target>-->
-<!--	</properties>-->
+	<!--	This should also work as an alternative to to adjusting things under <build>-->
+	<!--	<properties>-->
+	<!--		<maven.compiler.source>1.8</maven.compiler.source>-->
+	<!--		<maven.compiler.target>1.8</maven.compiler.target>-->
+	<!--        I don't yet know what this would do -->
+	<!--	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>     -->
+	<!--	</properties>-->
 
 	<!--OPTIONAL: Only useful for multi-module projects, each of which tends to have its own pom.xml file, whose parent is the top level pom file-->
-	<modules>
-		<!--        <module>MODULE ARTIFACT ID</module>-->
-	</modules>
-</project>
+	<!--	<modules>-->
+	<!--        <module>MODULE ARTIFACT ID</module>-->
+	<!--	</modules>-->
 
-		<!--Examples: -->
-		<!-- https://raw.githubusercontent.com/Nincraft/ModPackDownloader/master/pom.xml -->
-		<!-- https://github.com/Nincraft/ModPackDownloader/blob/master/modpackdownloader-core/pom.xml -->
-		<!-- https://github.com/Nincraft/ModPackDownloader/blob/master/modpackdownloader-maven-plugin/pom.xml -->
+	<!--	<reporting>-->
+	<!--		<plugins>-->
+	<!--			<plugin>-->
+	<!--				<groupId>org.codehaus.mojo</groupId>-->
+	<!--				<artifactId>versions-maven-plugin</artifactId>-->
+	<!--				<version>2.7</version>-->
+	<!--				<reportSets>-->
+	<!--					<reportSet>-->
+	<!--						<reports>-->
+	<!--							<report>dependency-updates-report</report>-->
+	<!--							<report>plugin-updates-report</report>-->
+	<!--							<report>property-updates-report</report>-->
+	<!--						</reports>-->
+	<!--					</reportSet>-->
+	<!--				</reportSets>-->
+	<!--			</plugin>-->
+	<!--		</plugins>-->
+	<!--	</reporting>-->
+
+
+</project><!--Examples: --><!-- https://raw.githubusercontent.com/Nincraft/ModPackDownloader/master/pom.xml --><!-- https://github.com/Nincraft/ModPackDownloader/blob/master/modpackdownloader-core/pom.xml --><!-- https://github.com/Nincraft/ModPackDownloader/blob/master/modpackdownloader-maven-plugin/pom.xml -->
