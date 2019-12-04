@@ -110,7 +110,7 @@ public final class FileUtils {
 
 	/**
 	 * @see #expandFileList(Collection, boolean, int) expandFileList(Collection&lt;File&gt;, boolean traverse, int maxDepth)
-	 * @deprecated Use <code>expandFileList(Collection, boolean, int)</code> instead
+	 * @deprecated Use {@code expandFileList(Collection, boolean, int)} instead
 	 */
 	@Deprecated
 	public static Vector<String> buildDirTree(String startDir) {
@@ -181,18 +181,6 @@ public final class FileUtils {
 	 * Removes from a {@code Collection<File>} all elements to which any of these conditions applies:<p>
 	 * 1. The <tt>File</tt> cannot be converted to a canonical form <p>
 	 * 2. The <tt>File</tt> has a canonical form, but does not exist. <p>
-	 *
-	 * <p><p>Invoking this method is equivalent to invoking {@link #reduceFiles(Collection, boolean) reduceFiles(allFiles, true)}
-	 *
-	 * @param allFiles A {@code Collection<File>} that may contain non-existent Files
-	 * @return A new {@code Vector<File>} containing only Files known to exist
-	 */
-	public static Vector<File> reduceFiles(Collection<File> allFiles) { return reduceFiles(allFiles, true);}
-
-	/**
-	 * Removes from a {@code Collection<File>} all elements to which any of these conditions applies:<p>
-	 * 1. The <tt>File</tt> cannot be converted to a canonical form <p>
-	 * 2. The <tt>File</tt> has a canonical form, but does not exist. <p>
 	 * 3. The <tt>File</tt> denotes a directory, and <tt>removeDirs</tt> is true. <p>
 	 *
 	 * @param allFiles   A {@code Collection<File>} that may contain non-existent Files
@@ -222,6 +210,18 @@ public final class FileUtils {
 		files.removeIf(Objects::isNull);
 		return files;
 	}
+
+	/**
+	 * Removes from a {@code Collection<File>} all elements to which any of these conditions applies:<p>
+	 * 1. The <tt>File</tt> cannot be converted to a canonical form <p>
+	 * 2. The <tt>File</tt> has a canonical form, but does not exist. <p><br>
+	 *
+	 * Invoking this method is equivalent to invoking {@link #reduceFiles(Collection, boolean) reduceFiles(allFiles, true)}
+	 *
+	 * @param allFiles A {@code Collection<File>} that may contain non-existent Files
+	 * @return A new {@code Vector<File>} containing only Files known to exist
+	 */
+	public static Vector<File> reduceFiles(Collection<File> allFiles) { return reduceFiles(allFiles, true);}
 
 	/*============ HIDDEN PARAMETERS ============*/
 

@@ -9,33 +9,23 @@ import java.util.StringJoiner;
 */
 @SuppressWarnings({"unused", "WeakerAccess", "RedundantSuppression"})
 public class StringUtils {
-	//Not intended for use as an Object
-
-	// Question: Will this just make all non-static methods in this class unusable? It seems to like causing NPEs
-	//  And is there even a point in having this in an abstract class?
 	private StringUtils() {}//No instantiation for you!
 
 	// Question: does this NEED the override if it's non-static?
 //  What if I make it have a static definition in the interface?
 //  Can such static methods use @Override at all?
+	//	public String charToString(char c) { return String.valueOf(c); }
+
+	/** @return The <tt>String</tt> value of <tt>char c</tt> */
 	public static String charToString(char c) { return String.valueOf(c); }
 
-//	public String charToString(char c) { return String.valueOf(c); }
-
-	/**
-	 * @return True if <tt>String s</tt> is either <tt>null</tt> or empty
-	 */
+	/** @return True if <tt>String s</tt> is either <tt>null</tt> or empty */
 	public static boolean isNullOrEmpty(String s) { return s == null || s.isEmpty();}//|| "".equals(s)
 
-	/**
-	 * @return True if <tt>String s</tt> is either <tt>null</tt> or consists of only whitespace
-	 */
+	/** @return True if <tt>String s</tt> is either <tt>null</tt> or consists of only whitespace */
 	public static boolean isNullOrBlank(String s) { return s == null || s.trim().isEmpty(); }
 
-
-	/**
-	 * @return a new <tt>String</tt> of length <tt>n</tt> filled with character <tt>c</tt>
-	 */
+	/** @return A new <tt>String</tt> of length <tt>n</tt> filled with character <tt>c</tt> */
 	public static String charNTimes(char c, int n) { return new String(new char[n]).replace('\0', c); }
 
 	/*

@@ -3,7 +3,6 @@ package com.StaticPH.MicroAud.audioPlayer;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
-// import javax.sound.sampled.DataLine;
 import javax.sound.sampled.DataLine.Info;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -13,6 +12,8 @@ import java.io.IOException;
 
 //import com.StaticPH.MicroAud.AssortedUtils;
 import com.StaticPH.MicroAud.StringUtils;
+import com.jcraft.jorbis.JOrbisException;
+import com.jcraft.jorbis.VorbisFile;
 
 import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
 import static javax.sound.sampled.AudioSystem.getAudioInputStream;
@@ -32,25 +33,33 @@ public final class ConvertingAudioPlayer extends AbstractAudioPlayer {
 
 	public ConvertingAudioPlayer(int bufferSize) { this.bufferSize = bufferSize; }
 
+
 	@Override
 	public void playFile(File file) {
 		try {
-			play(AudioSystem.getAudioInputStream(file), file.getName());
+			play(AudioSystem.getAudioInputStream(file), file.getName(), file.getPath());
 		}
-		catch (IOException e) { e.printStackTrace();}
-		catch (UnsupportedAudioFileException e) { System.out.println(getUnsupportedAudioFileMessage(file.getName()));}
+		catch (IOException e) { e.printStackTrace(); }
+		catch (UnsupportedAudioFileException e) { System.out.println(getUnsupportedAudioFileMessage(file.getName())); }
 	}
 
-	private void play(AudioInputStream audIn, final String name) {
+	private void play(AudioInputStream audIn, final String name, final String filePath) {
+		// Yes, the name and filePath parameters could have been replaced with a single File object, but then I'd be
+		// passing around the entire object when I REALLY just needed the results of getPath() and getName()
+		// Also could've just done some string manipulation with filePath to get name, but didn't think it worth it.
 		final AudioFormat outFormat = getOutFormat(audIn.getFormat());
 		final Info info = new Info(SourceDataLine.class, outFormat);
+		final long fileDuration = vorbisDuration(filePath);
 
 		try (final SourceDataLine line = (SourceDataLine) AudioSystem.getLine(info)) {
-
 			if (line != null) {
 				line.open(outFormat);
 //				AssortedUtils.getLogger().info(
-				System.out.println("\033[35mDuration: " + (duration(audIn, outFormat)) + "\033[0m");
+				System.out.println(
+					"\033[35mDuration: " +
+					(fileDuration != -1 ? durationToString(fileDuration) : duration(audIn, outFormat))
+					+ "\033[0m"
+				);
 				line.start();
 				streamAudioOut(getAudioInputStream(outFormat, audIn), line);
 				line.drain();
@@ -78,6 +87,19 @@ public final class ConvertingAudioPlayer extends AbstractAudioPlayer {
 			line.write(buffer, 0, n);
 		}
 	}
+
+	/**
+	 * @param filePath A <tt>String</tt> representing the path to a known-to-exist file;
+	 *                 the file is assumed to be a vorbis file
+	 * @return The duration in microseconds of the vorbis file denoted by <tt>filePath</tt>,
+	 * or -1 if an exception occurred.
+	 */
+	public long vorbisDuration(final String filePath) {
+		// If there were no problems, multiply return value by 1 million to convert from seconds to microseconds
+		try { return (long) (new VorbisFile(filePath).time_total(-1) * 1_000_000); }
+		catch (JOrbisException e) { return -1; }
+	}
+
 }
 
 /*

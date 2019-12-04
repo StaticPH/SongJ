@@ -29,7 +29,7 @@ public class BasicAudioPlayer extends AbstractAudioPlayer {
 	/**
 	 * Play <tt>.wav</tt>, <tt>.au</tt>, or <tt>.aiff</tt> files, and anything else included in
 	 * {@link AudioSystem#getAudioFileTypes()}
-	 * <p></p>
+	 * <p>
 	 * Should also support the MIDI based song file formats:
 	 * SMF type 0 (Standard MIDI File, aka <tt>.mid</tt> files), SMF type 1 and RMF.
 	 *
@@ -68,7 +68,7 @@ public class BasicAudioPlayer extends AbstractAudioPlayer {
 	 * Play audio from an <tt>InputStream</tt> opened to <tt>.wav</tt>, <tt>.au</tt>, or <tt>.aiff</tt>
 	 * files, or any other file type supported
 	 * according to {@link AudioSystem#getAudioFileTypes()}
-	 * <p></p>
+	 * <p>
 	 * Should also support an <tt>InputStream</tt> opened to MIDI based song file formats:
 	 * SMF type 0 (Standard MIDI File, aka <tt>.mid</tt> files), SMF type 1 and RMF.
 	 *

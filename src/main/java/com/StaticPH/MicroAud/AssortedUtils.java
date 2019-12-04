@@ -61,7 +61,7 @@ public final class AssortedUtils {
 	 * Filter an Iterable by applying a Predicate function to each element within.
 	 * If the predicate is true, remove the element.
 	 * <p>
-	 * This is equivalent to <code>filter(iterable, comparer.negate())</code> where <code> comparer != null</code>
+	 * This is equivalent to {@code filter(iterable, comparer.negate())} where {@code comparer != null}
 	 * </p>
 	 *
 	 * @param <T>      The type of object contained within the Iterable
