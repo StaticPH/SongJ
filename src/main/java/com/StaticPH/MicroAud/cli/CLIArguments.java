@@ -1,5 +1,8 @@
-package com.StaticPH.MicroAud;
+package com.StaticPH.MicroAud.cli;
 
+import com.StaticPH.MicroAud.AssortedUtils;
+import com.StaticPH.MicroAud.FileUtils;
+import com.StaticPH.MicroAud.StringUtils;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.FileConverter;
 
@@ -8,7 +11,7 @@ import java.util.List;
 import java.util.Vector;
 
 @SuppressWarnings({"unused", "WeakerAccess", "FieldCanBeLocal"})
-class CLIArguments {
+public class CLIArguments {
 	CLIArguments() {}// No instantiating!
 
 //	public class StringListToVector implements IStringConverter<Vector<String>>{
@@ -76,14 +79,14 @@ class CLIArguments {
 	)
 	private boolean traverseDirectoriesEnabled = false;
 
-	boolean isDirectoryTraversalEnabled() {return traverseDirectoriesEnabled;}
+	public boolean isDirectoryTraversalEnabled() {return traverseDirectoriesEnabled;}
 
 
 //	@Parameter(
 //		names={"--max_count"}, description = "The maximum number of files to queue up"
 //	)
 //	private int maxCount = 20;
-//	private int getMaxCount(){return maxCount;}
+//	public int getMaxCount(){return maxCount;}
 
 
 	@Parameter(
@@ -97,6 +100,7 @@ class CLIArguments {
 	//  Complain if maxDepth parameter was provided without the traversal parameter
 	//  maxDepth should probably be 0 (or -1?) when traversal is not enabled.
 	//  when traversal IS enabled, but maxDepth is not specified on the command line, maxDepth should EITHER be Integer.MAX_VALUE OR some sane limiting value like 5
+	// example: https://github.com/Nincraft/ModPackDownloader/blob/master/modpackdownloader-core/src/main/java/com/nincraft/modpackdownloader/validation/ReleaseType.java
 
 
 	/*EXAMPLE
@@ -109,7 +113,7 @@ class CLIArguments {
 	@Parameter(names = {"-help"}, description = "Displays this great message", help = true)
 	private boolean helpEnabled;
 
-	boolean isHelpEnabled() { return helpEnabled;}
+	public boolean isHelpEnabled() { return helpEnabled;}
 
 	/*============ HIDDEN PARAMETERS ============*/
 
@@ -119,6 +123,6 @@ class CLIArguments {
 	)
 	private boolean disablePlayback = false;
 
-	boolean isPlaybackDisabled() {return disablePlayback;}
+	public boolean isPlaybackDisabled() {return disablePlayback;}
 
 }

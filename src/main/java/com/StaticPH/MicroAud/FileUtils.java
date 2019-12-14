@@ -14,20 +14,18 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.logging.log4j.Logger;
 
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
+import static com.StaticPH.MicroAud.AssortedUtils.getLogger;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class FileUtils {
 
-	private static final Logger loggo = Logger.getLogger(FileUtils.class.getName());
-
-	public static void enableLogging() {loggo.setFilter(record -> true);}    // I hate wizardry like this -_-
-
-	public static void disableLogging() {loggo.setFilter(record -> false);}
+	private static final Logger loggo = getLogger("FileUtils");
 
 	//???: is one of these two fileExists methods somehow better, or more robust?
 	public static boolean fileExists(File f) {return f != null && f.exists();}
@@ -40,18 +38,14 @@ public final class FileUtils {
 
 		try (Scanner userInput = new Scanner(System.in)) {
 			f = new File(userInput.next()).getCanonicalFile();
-//			f = f.getCanonicalFile();
-			loggo.info(
-//				String.format("'%s' resolved to canonical path: '%s'\n", f.getPath(), f.getCanonicalPath()) // String.format performs poorly
-				'\'' + f.getPath() + "' resolved to canonical path: '" + f.getCanonicalPath() + "'\n"
-			);
+			loggo.debug("'{}' resolved to canonical path: '{}'", f.getPath(), f.getCanonicalPath());
 			if (!f.exists()) {
-				loggo.info("File not found: '" + f.getCanonicalPath() + "'\n");
+				loggo.debug("File not found: '{}'\n", f.getCanonicalPath());
 				f = null;
 			}
 		}
 		catch (IOException e) {
-			loggo.log(Level.FINER, "Error constructing canonical pathname", e);
+			loggo.warn("Error constructing canonical pathname", e);
 			f = null;
 		}
 		return f;
@@ -60,24 +54,16 @@ public final class FileUtils {
 	}
 
 
-	/**
-	 * FIXME: Call me crazy, but I don't think I should be double nesting File instantiation just to avoid handling an IOException
-	 * That said, line 638 in {@link com.sun.media.sound.SoftSynthesizer#getDefaultSoundbank} seems to be doing something rather similar?
-	 */
-	public static File getFileFromPath(String path) {  //TODO: REVAMP ME
-/*
-		File f = new File(new File(path).getAbsolutePath());
-
-		if (!f.exists()) {
-			System.out.println("File not found");
-			f = null;
-		}
-		return f;
-*/
+	public static File getFileFromPath(String path) {
 		return existingFileOrNull(tryCanonicalize(new File(path)));
-	}   //this should probably throw exceptions, not catch them
+	}
 
 	public static URL getFileURL(File f) throws MalformedURLException { return f.toURI().toURL();}
+
+	public static File getWorkingDir() { return new File(".").getAbsoluteFile();}
+
+	public static String getWorkingDirPath() { return new File(".").getAbsolutePath();}
+
 
 	public static boolean isDirectory(File file) {return Files.isDirectory(file.toPath());}
 
@@ -108,70 +94,29 @@ public final class FileUtils {
 
 	public static void readFirstNBytes(File file, int numBytes) { readNBytes(file, numBytes, 0);}
 
-	/**
-	 * @see #expandFileList(Collection, boolean, int) expandFileList(Collection&lt;File&gt;, boolean traverse, int maxDepth)
-	 * @deprecated Use {@code expandFileList(Collection, boolean, int)} instead
-	 */
-	@Deprecated
-	public static Vector<String> buildDirTree(String startDir) {
-		if (!isDirectory(startDir)) { return null;}
-		Vector<String> tree = new Vector<>();
-		try {
-			Files.walk(new File(startDir).toPath(), Integer.MAX_VALUE, FOLLOW_LINKS)
-//			     .filter(REMOVE NULL AND EMPTY)
-//			     .filter(REMOVE UNSUPPORTED FILE TYPES)
-//			     .limit(SOME SANE VALUE, LIKE 20, because its unlikely that a user will actually want to play that many things in a queue without a means of pausing or skipping)
-//                 .forEach(
-//	                 path -> System.out.println("walking: " + path)
-//                 );
-                 .forEach(path -> tree.add(path.toString()))
-			;
-
-		}
-		catch (IOException e) {
-			System.out.println("exception at walk: " + e);
-		}
-		return tree;
-	}
-
-//	public static Vector<File> expandFileList(Vector<File> files){ return expandFileList(files, false);}
-
-//	public static Vector<File> expandFileList(Vector<File> files, int maxDepth) {
-//		// bad idea when maxDepth defaults to Integer.MAX_VALUE
-//		return expandFileList(files, maxDepth > 0, maxDepth);
-//	}
-
-	public static Vector<File> expandFileList(Collection<File> files, boolean traverse, int maxDepth) {
-//		Vector<Path> paths = new Vector<Path>(files.parallelStream().map(File::toPath));    No clear way to convert a Stream to a Collection in a single statement...
+	public static Vector<File> expandFileList(Collection<? extends File> files, boolean traverse, int maxDepth) {
 		Vector<File> expandedFiles = new Vector<>();
-		Vector<Path> paths = new Vector<>();// Surely there's a way to do this conversion in a single statement...
-		files.forEach(file -> paths.add(file.toPath()));    // Always adds ALL file parameters to list of paths to check
+		Vector<Path> paths = files.stream().map(File::toPath).collect(Collectors.toCollection(Vector::new));
+		// Always adds ALL file parameters to list of paths to check
 		if (traverse) {
-//			Stream<Path> pathStream = files.parallelStream().map(File::toPath);
 			for (Path path : paths) {   //Check ALL paths in list
-//					if (Files.isDirectory(path)){
-				try {
-					// Add all paths and all child-paths to expanded list
-					// It'd be nice to have a copy of this method that only differs by NOT retaining the directories it traversed.
-					// Since that doesn't appear to be an option, reduceFiles will have to do that too.
-					Files.walk(path, maxDepth, FOLLOW_LINKS)
-					     .forEach(walkedPath -> expandedFiles.add(walkedPath.toFile()));
+//				paths.stream().flatMap(???);  I'm all but certain this can help here, but I can't see how
+				try (Stream<Path> walked = Files.walk(path, maxDepth, FOLLOW_LINKS)) {
+					expandedFiles.addAll(walked.map(Path::toFile)
+					                           .collect(Collectors.toCollection(Vector::new))
+					);
 				}
 				catch (IOException e) { e.printStackTrace();}
-//					}
 			}
 		}
 		else {
-			loggo.fine("Directory traversal is not enabled. Directory arguments will be discarded.");
-//			paths.removeIf(path -> {
-//				if (Files.isDirectory(path)) {
-//					// I'd rather this use System.out than print a header line for every discarded directory
-//					System.out.println("Discarding \"" + path.toString() + "\"");
-//					return true;
-//				}
-//				return false;
-//			});
-			paths.forEach(path -> expandedFiles.add(path.toFile()));
+			loggo.info("Directory traversal is not enabled. Directory arguments will be discarded.");
+			expandedFiles.addAll(
+				paths.stream()
+				     .map(Path::toFile)
+				     .filter(f -> !f.isDirectory())
+				     .collect(Collectors.toCollection(Vector::new))
+			);
 		}
 		// Clean up the expanded file list before returning it
 		return reduceFiles(expandedFiles);
@@ -187,13 +132,11 @@ public final class FileUtils {
 	 * @param removeDirs When true, removes all directories from <tt>allFiles</tt>
 	 * @return A new {@code Vector<File>} containing only Files known to exist
 	 */
-	public static Vector<File> reduceFiles(Collection<File> allFiles, final boolean removeDirs) {
+	public static Vector<File> reduceFiles(Collection<? extends File> allFiles, boolean removeDirs) {
 		// File elements to be discarded will be set to null first, before all null values are discarded
 		Vector<File> files =
 			allFiles.stream()
-			        /*
-			         If the file cannot be canonicalized, discard it
-			         */
+			        /* If the file cannot be canonicalized, discard it */
 			        .map(FileUtils::tryCanonicalize)
 			        /*
 			         If the canonicalized File does not denote an existing file, discard it.
@@ -201,11 +144,9 @@ public final class FileUtils {
 			         even if they somehow exist, they're still getting discarded.
 			         */
 			        .map(FileUtils::existingFileOrNull)
-			        /*
-			         If removeDirs is true, discard any Files denoting a directory
-			         */
-			        .map(f -> ((f != null) && removeDirs && isDirectory(
-				        f)) ? null : f) //might be better to just take care of this part during expansion
+			        /* If removeDirs is true, discard any Files denoting a directory */
+			        .map(f -> ((f != null) && removeDirs && isDirectory(f)) ? null : f)
+			        //Should this last map() call just be taken care of during expansion?
 			        .collect(Collectors.toCollection(Vector::new));
 		files.removeIf(Objects::isNull);
 		return files;
@@ -215,13 +156,13 @@ public final class FileUtils {
 	 * Removes from a {@code Collection<File>} all elements to which any of these conditions applies:<p>
 	 * 1. The <tt>File</tt> cannot be converted to a canonical form <p>
 	 * 2. The <tt>File</tt> has a canonical form, but does not exist. <p><br>
-	 *
+	 * <p>
 	 * Invoking this method is equivalent to invoking {@link #reduceFiles(Collection, boolean) reduceFiles(allFiles, true)}
 	 *
 	 * @param allFiles A {@code Collection<File>} that may contain non-existent Files
 	 * @return A new {@code Vector<File>} containing only Files known to exist
 	 */
-	public static Vector<File> reduceFiles(Collection<File> allFiles) { return reduceFiles(allFiles, true);}
+	public static Vector<File> reduceFiles(Collection<? extends File> allFiles) { return reduceFiles(allFiles, true);}
 
 	/*============ HIDDEN PARAMETERS ============*/
 
@@ -230,20 +171,10 @@ public final class FileUtils {
 	 * @return The <tt>File</tt> object if it denotes an existing file; otherwise returns <tt>null</tt>.
 	 */
 	private static File existingFileOrNull(File file) {
-		/* No opportunity for feedback
-		return file.exists()?file:null;
-		*/
-		/* not as clear
-		if (file != null) {
-			if (file.exists()) { return file; }
-			loggo.info("No such file: \"" + file.getPath() + "\". This file will be ignored.");
-		}
-		return null;
-		 */
 		if (file != null) {
 			if (file.exists()) { return file; }
 			else {
-				loggo.info("No such file: \"" + file.getPath() + "\". This file will be ignored.");
+				loggo.info("No such file: \"{}\". This file will be ignored.", file::getPath);
 				return null;
 			}
 		}
@@ -257,7 +188,7 @@ public final class FileUtils {
 	private static File tryCanonicalize(File file) {
 		try { return file.getCanonicalFile();}
 		catch (IOException e) {
-			loggo.info("Unable to get canonical path for \"" + file.getPath() + "\". This file will be ignored.");
+			loggo.warn("Unable to get canonical path for \"{}\". This file will be ignored.", file::getPath);
 			return null;
 		}
 	}

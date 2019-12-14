@@ -1,11 +1,11 @@
-package com.StaticPH.MicroAud;
+package com.StaticPH.MicroAud.cli;
 
 import com.beust.jcommander.JCommander;
 
 import java.io.File;
 import java.util.Vector;
 
-@SuppressWarnings({"WeakerAccess", "UnnecessaryReturnStatement"})
+@SuppressWarnings({"UnnecessaryReturnStatement"})
 public class ArgManager {
 	private CLIArguments arguments;
 	private JCommander jCommander;
@@ -42,6 +42,7 @@ public class ArgManager {
 		*/
 		/* If no files were given, display the program help and ignore further arguments.*/
 		if (fileCount == 0) {
+//			System.out.println("No playable files were discovered.");
 			getJCommander().usage();
 			return;
 		}

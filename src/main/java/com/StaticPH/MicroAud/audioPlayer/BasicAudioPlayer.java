@@ -1,7 +1,7 @@
 package com.StaticPH.MicroAud.audioPlayer;
 
 import com.StaticPH.MicroAud.AssortedUtils;
-import com.StaticPH.MicroAud.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -11,10 +11,15 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
 
+import static com.StaticPH.MicroAud.AssortedUtils.doze;
+import static com.StaticPH.MicroAud.audioPlayer.PlaybackHelpers.getUnsupportedAudioFileMessage;
+
 //java.util.Vector is a good conceptual example of a class that extends an abstract class
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class BasicAudioPlayer extends AbstractAudioPlayer {
+	public static final Logger loggo = AssortedUtils.getLogger("BasicAudioPlayer");
+
 	public BasicAudioPlayer() {}
 
 	/* I dont think I really WANT this to be static?
@@ -38,28 +43,16 @@ public class BasicAudioPlayer extends AbstractAudioPlayer {
 	 */
 	@SuppressWarnings("DanglingJavadoc")
 	@Override
-	public void playFile(File file) {// throws UnsupportedAudioFileException {
-//		try {
-//			AudioInputStream ais = AudioSystem.getAudioInputStream(file);
-//			try (Clip clip = AudioSystem.getClip()) {
-//				clip.open(ais);
-//				clip.start();
-//				AssortedUtils.getLogger().info("Now playing from: \"" + file.getName() + "\"");
-//				Thread.sleep(clip.getMicrosecondLength() / 1000);
-//			}
-//		}
-//		catch (UnsupportedAudioFileException | IOException | LineUnavailableException | InterruptedException e) {
-//			e.printStackTrace();
-//		}
+	public void playFile(File file) {
 		/**
 		 * Throws IOException by way of <tt>reader.getAudioInputStream(file)</tt>
 		 * at line 1181 of {@link AudioSystem#getAudioInputStream(File)}
 		 * That function (reader.getAudioInputStream) is then defined in different FileReader implementations
 		 */
-		try { playClipFromStream(AudioSystem.getAudioInputStream(file), file.getName());}
+		try { playClipFromStream(AudioSystem.getAudioInputStream(file));}
 		catch (IOException e) { e.printStackTrace();}
 		catch (UnsupportedAudioFileException e) {
-//			throw new UnsupportedAudioFileException(getUnsupportedAudioFileMessage(file.getName()));
+			//TODO: this exception should really be passed all the way up before being caught
 			System.out.println(getUnsupportedAudioFileMessage(file.getName()));
 		}
 	}
@@ -73,53 +66,25 @@ public class BasicAudioPlayer extends AbstractAudioPlayer {
 	 * SMF type 0 (Standard MIDI File, aka <tt>.mid</tt> files), SMF type 1 and RMF.
 	 *
 	 * @param audIn An <tt>InputStream</tt> opened to a file supported by {@link AudioSystem}
-	 * @param name  Optional: name of the file audio is being played from
 	 * @see #playFile(File)
 	 * @see AudioSystem#getAudioFileTypes()
 	 */
-	private void playClipFromStream(AudioInputStream audIn, String name) {
-//		audIn.getFormat()
+	public static void playClipFromStream(AudioInputStream audIn) {
 		try (Clip clip = AudioSystem.getClip()) {
 			clip.open(audIn);
-			AssortedUtils.getLogger().info(
-				"Now playing from: \"" + (StringUtils.isNullOrEmpty(name) ? "unknown audio file." : name)
-				+ "\"\nDuration: " + duration(clip)
-			);
+			System.out.println("Duration: " + PlaybackHelpers.duration(clip.getMicrosecondLength()) + '\n');
 			clip.start();
-
-			// Main thread still dies before audio starts
-//			while (true){
-//				if (!clip.isRunning()){
-//					break;
-//				}
-//			}
-
-			// Keeps main thread alive while audio plays
 
 			//TODO: switch to giving each player its own thread, or using a single thread shared between players,
 			// but distinct from the program's main thread
-			try {
-				Thread.sleep(clip.getMicrosecondLength() / 1000);
-				System.err.println(
-					"ATTN: Finished playing from: \"" +
-					(StringUtils.isNullOrEmpty(name) ? "unknown audio file." : name)
-					+ "\""
-				);
-//				clip.close();   //Should autoclose, as Clip ultimately extends AutoClosable
-			}
-			catch (InterruptedException e) { e.printStackTrace();}
+
+			// Keeps main thread alive while audio plays
+			doze(clip.getMicrosecondLength() / 1000);
 		}
 		catch (LineUnavailableException | IOException e) {
 			e.printStackTrace();
 		}
 	}
-
-	/**
-	 * @see #playClipFromStream(AudioInputStream, String) playClipFromStream(AudioInputStream, String&nbsp;=&nbsp;null)
-	 * @deprecated Please call {@link #playFile(File)} instead
-	 */
-	@Deprecated
-	private void playClipFromStream(AudioInputStream audIn) {playClipFromStream(audIn, null);}
 
 /*	public void loopClip(Clip c){
 		if (clip.isRunning())

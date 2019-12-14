@@ -1,27 +1,33 @@
 package com.StaticPH.MicroAud;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.function.Predicate;
-import java.util.logging.Logger;
+//import java.util.logging.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 @SuppressWarnings({"unused", "WeakerAccess", "RedundantSuppression"})
 public final class AssortedUtils {
-	// Currently this project is small enough that I don't think it worth having context-specific loggers; just use the global one
-	private static Logger loggo = Logger.getGlobal();       // NOTE: I WANT TO KEEP THIS
+	private static Logger loggo = LogManager.getLogger("AssortedUtils");
 
 	// I need to either allow instantiation, make all the methods static, or not make the class final so that I can subclass it
 //	private AssortedUtils() {}//no instantiating
 
-	//???: Should I not assign loggo with its declaration, but instead add a check in getLogger
-	//      ```     if (!loggo){loggo = Logger.getGlobal();}     ```
-	public static Logger getLogger() { return loggo; }
-	//TODO: public, ?ideally non-static?, method that sets filter level for loggo
+	//???: Is it even worth doing this instead of just including the import for LogManager everywhere?
+	public static Logger getLogger(String name) { return LogManager.getLogger(name); }
 
-	public static void logArgs(String[] args) {
-		//These two statements could be combined, eliminating a variable, but at the cost of readability
-		String argList = StringUtils.delimitStrings(",", true, "args: [", "]", args);
-		loggo.info(argList);
+	public static Logger getLogger(Object obj) { return LogManager.getLogger(obj); }
+
+	public static Logger getLogger(Class<?> clazz) { return LogManager.getLogger(clazz); }
+
+	/** Print the path to a class, including classes from libraries */
+	public static void printClasspath(Class<?> clazz) {
+		System.out.println(clazz.getProtectionDomain().getCodeSource().getLocation().getPath());
 	}
+
+	/** Print the classpath for this module */
+	public static void printClasspath() { System.out.println(System.getProperty("java.class.path"));}
 
 	static void printn(Object... objs) {
 		for (Object obj : objs) {
@@ -73,16 +79,6 @@ public final class AssortedUtils {
 	 */
 	@SuppressWarnings("UnusedReturnValue")
 	public static <T> boolean inverseFilter(Iterable<T> iterable, Predicate<? super T> comparer) {
-//		boolean didModify = false;
-//		if (iterable != null && comparer != null) {
-//			for (Iterator<T> iter = iterable.iterator(); iter.hasNext(); ) {
-//				if (comparer.test(iter.next())) {
-//					iter.remove();
-//					didModify = true;
-//				}
-//			}
-//		}
-//		return didModify;
 		boolean didModify = false;
 		if (iterable != null && comparer != null) {didModify = filter(iterable, comparer.negate());}
 		return didModify;
@@ -99,4 +95,26 @@ public final class AssortedUtils {
 		AssortedUtils.inverseFilter(iterable, p );
 	}
 */
+
+	/**
+	 * Create a <tt>byte</tt> array full of null bytes
+	 *
+	 * @param length How long the <tt>byte</tt> array should be. and thus, how many null bytes will be in it.
+	 * @return An array of null bytes.
+	 */
+	public static byte[] getNullBytes(int length) {
+		final byte[] bytes = new byte[length];
+		Arrays.fill(bytes, (byte) 0);
+		return bytes;
+	}
+
+	public static void printBar() {
+		System.out.println("\033[1;36m" + StringUtils.charNTimes('=', 48) + "\033[0m" + '\n');
+	}
+
+	/** Hide away the exception handling for a Thread.sleep() call. */
+	public static void doze(long timeoutSec) {
+		try { Thread.sleep(timeoutSec);}
+		catch (InterruptedException e) { e.printStackTrace();}
+	}
 }
