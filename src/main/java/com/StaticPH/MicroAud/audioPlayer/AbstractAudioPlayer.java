@@ -1,10 +1,8 @@
 package com.StaticPH.MicroAud.audioPlayer;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.Clip;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
+import java.util.Set;
 
 
 // java.util.AbstractCollection is a decent conceptual example of an abstract class;
@@ -23,11 +21,6 @@ import java.io.File;
  */
 @SuppressWarnings({"unused", "WeakerAccess", "FieldCanBeLocal"})
 public abstract class AbstractAudioPlayer implements IAudioPlayer {
-	/*
-	???: TODO: Do i make this extend some arbitrary type so that I can create ALL players like
-		AnyPlayer player = specificPlayer();
-		or what? WAIT, ISN'T THAT WHAT I'M DOING ALREADY?
-	 */
 
 	/** When true, duration strings include milliseconds. Rounds down to nearest second when false */
 	protected static boolean show_ms = false;
@@ -41,4 +34,8 @@ public abstract class AbstractAudioPlayer implements IAudioPlayer {
 
 	@Override
 	public abstract void playFile(File file) throws UnsupportedAudioFileException;
+
+	/** @return The file types supported by the specific subclass of AbstractAudioPlayer */
+	@Override
+	public abstract Set<String> getSupportedTypes();
 }

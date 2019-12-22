@@ -1,9 +1,12 @@
 package com.StaticPH.MicroAud.audioPlayer;
 
+import com.StaticPH.MicroAud.StringUtils;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.Clip;
 import java.io.File;
+import java.util.Vector;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class PlaybackHelpers {
@@ -65,16 +68,33 @@ public final class PlaybackHelpers {
 	 */
 	public static String duration(AudioInputStream audIn) { return duration(audIn, audIn.getFormat());}
 
-	public static void nowPlaying(AbstractAudioPlayer A, File file) {
+	public static void printBar() {
+		System.out.println("\n\033[1;36m" + StringUtils.charNTimes('=', 48) + "\033[0m" + '\n');
+	}
+
+	public static void printNowPlaying(AbstractAudioPlayer A, File file) {
+		//A.getClass().getName() to show package path too
 		System.out.println(
 			"\033[35mPlayer: \033[1;35m" + A.getClass().getSimpleName() +
 			"\033[0;35m NOW PLAYING \"" + file.getPath() + "\"\033[0m"
 		);
 	}
 
-	static String getUnsupportedAudioFileMessage(String filename) {
+	public static void printDuration(String len) {
+		System.out.println("\033[35mDuration: " + len + "\033[0m");
+	}
+
+	public static String getUnsupportedAudioFileMessage(String filename) {
 		return "UnsupportedAudioFileException: \"" + filename + "\" is not a supported audio file.\n" +
-               "If the file extension gives the appearance of a supported file type, " +
-               "verify that its file signature matches the magic bytes for the file type associated with the extension.";
+		       "If the file extension gives the appearance of a supported file type, " +
+		       "verify that its file signature matches the magic bytes for the file type associated with the extension.";
+	}
+
+	public static void printPlayQueue(Vector<? extends File> filesToPlay) {
+		System.out.print("Queue (Potential media files: " + filesToPlay.size() + "): \n");
+		filesToPlay.stream()
+		           .map(file -> "      " + file.getPath())
+		           .forEach(System.out::println);
+		System.out.println();
 	}
 }

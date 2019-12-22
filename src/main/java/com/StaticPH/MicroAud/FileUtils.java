@@ -17,6 +17,9 @@ import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.j256.simplemagic.ContentInfo;
+import com.j256.simplemagic.ContentInfoUtil;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
@@ -45,7 +48,7 @@ public final class FileUtils {
 			}
 		}
 		catch (IOException e) {
-			loggo.warn("Error constructing canonical pathname", e);
+			loggo.warn("Error constructing canonical pathname: ", e);
 			f = null;
 		}
 		return f;
@@ -72,6 +75,16 @@ public final class FileUtils {
 	public static boolean isDirectory(String path) {return Files.isDirectory(new File(path).toPath());}
 //	public static boolean isDirectory(String path){return new File(path).isDirectory();} //???: which of these two methods is better?
 
+	/**
+	 * @param file A <tt>File</tt> object
+	 * @return {@code true} if the <tt>File</tt> object denotes the path to a symbolic link, otherwise {@code false}.
+	 * @throws IOException If an I/O error occurs, which is possible because the construction of the
+	 *                     canonical pathname may require filesystem queries, or simply because the
+	 *                     <tt>File</tt> object denotes a path to a file that does not exist.
+	 */
+	public static boolean isSymlink(File file) throws IOException {
+		return !file.getAbsolutePath().equals(file.getCanonicalPath());
+	}
 
 	//Look at using an enum/map/dictionary as the type for this function,
 	// and assigning a different file type(and unknown) to the different enum values?
@@ -82,41 +95,40 @@ public final class FileUtils {
 		final int internalBufSize = (numBytes >= 8192) ? numBytes : 8192;
 		byte[] buf = new byte[internalBufSize];
 		try (InputStream fileStream = new BufferedInputStream(new FileInputStream(file), internalBufSize)) {
-			//???: given that InputStream.skip directly returns 0 for negative values, is there any reason to check for them, and throw an exception if found?
+			//???: given that InputStream.skip directly returns 0 for negative values,
+			// is there any reason to check for them, and throw an exception if found?
 			// Even if only to prevent/discourage/punish passing a negative offset to readNBytes?
 			fileStream.skip(offset);
 			if (fileStream.read(buf) != -1) {
 				System.out.println(Arrays.toString(buf));
 			}
 		}
-		catch (IOException e) { e.printStackTrace();}
+		catch (IOException e) { loggo.catching(Level.WARN, e);}
 	}
 
 	public static void readFirstNBytes(File file, int numBytes) { readNBytes(file, numBytes, 0);}
 
+	//TODO: MAKE GLOBS WORK AGAIN
 	public static Vector<File> expandFileList(Collection<? extends File> files, boolean traverse, int maxDepth) {
 		Vector<File> expandedFiles = new Vector<>();
 		Vector<Path> paths = files.stream().map(File::toPath).collect(Collectors.toCollection(Vector::new));
 		// Always adds ALL file parameters to list of paths to check
 		if (traverse) {
 			for (Path path : paths) {   //Check ALL paths in list
-//				paths.stream().flatMap(???);  I'm all but certain this can help here, but I can't see how
 				try (Stream<Path> walked = Files.walk(path, maxDepth, FOLLOW_LINKS)) {
-					expandedFiles.addAll(walked.map(Path::toFile)
-					                           .collect(Collectors.toCollection(Vector::new))
+					expandedFiles.addAll(
+						walked.map(Path::toFile).collect(Collectors.toCollection(Vector::new))
 					);
 				}
-				catch (IOException e) { e.printStackTrace();}
+				catch (IOException e) { loggo.catching(Level.WARN, e);}
 			}
 		}
 		else {
 			loggo.info("Directory traversal is not enabled. Directory arguments will be discarded.");
-			expandedFiles.addAll(
-				paths.stream()
-				     .map(Path::toFile)
-				     .filter(f -> !f.isDirectory())
-				     .collect(Collectors.toCollection(Vector::new))
-			);
+			expandedFiles = paths.stream()
+			                     .map(Path::toFile)
+			                     .filter(f -> !f.isDirectory())
+			                     .collect(Collectors.toCollection(Vector::new));
 		}
 		// Clean up the expanded file list before returning it
 		return reduceFiles(expandedFiles);
@@ -164,6 +176,37 @@ public final class FileUtils {
 	 */
 	public static Vector<File> reduceFiles(Collection<? extends File> allFiles) { return reduceFiles(allFiles, true);}
 
+	//TODO: DOCUMENT ME
+	public static String magicTest(File f) {
+		// create a magic utility using the internal magic file
+		ContentInfoUtil util = new ContentInfoUtil();
+
+		try {
+			ContentInfo info = util.findMatch(f); // may throw IOException
+
+			if (info == null) {
+				loggo.debug("File \"{}\" is of an unknown content-type", f.getName());
+			}
+			else {
+				String name = info.getName();
+				if (name.equals("other")) {
+					loggo.debug("File \"{}\" is of uncertain content-type", f.getName());
+					return "OTHER";
+				}
+				else {
+					loggo.debug("File \"{}\" is of type {}", f.getName(), name);
+					return info.getContentType().toString();
+				}
+			}
+		}
+		catch (IOException e) {
+			loggo.debug("Encountered an issue while attempting to verify the type of \"{}\"", f.getPath());
+			loggo.catching(Level.WARN, e);
+//			System.err.println("Error: " + e.getMessage() + "  Resolution: Treat file as unsupported.");
+		}
+		return "EMPTY";
+	}
+
 	/*============ HIDDEN PARAMETERS ============*/
 
 	/**
@@ -174,7 +217,7 @@ public final class FileUtils {
 		if (file != null) {
 			if (file.exists()) { return file; }
 			else {
-				loggo.info("No such file: \"{}\". This file will be ignored.", file::getPath);
+				loggo.warn("No such file: \"{}\". This file will be ignored.", file.getPath());
 				return null;
 			}
 		}
@@ -188,11 +231,8 @@ public final class FileUtils {
 	private static File tryCanonicalize(File file) {
 		try { return file.getCanonicalFile();}
 		catch (IOException e) {
-			loggo.warn("Unable to get canonical path for \"{}\". This file will be ignored.", file::getPath);
+			loggo.warn("Unable to get canonical path for \"{}\". This file will be ignored.", file.getPath());
 			return null;
 		}
 	}
 }
-
-// ???: How can I tell a function that it will never encounter a particular exception??
-// ???: Silly question; does making a method final just mean that it can't be overridden?

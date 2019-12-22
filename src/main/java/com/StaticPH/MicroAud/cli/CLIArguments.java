@@ -9,10 +9,11 @@ import com.beust.jcommander.converters.FileConverter;
 import java.io.File;
 import java.util.List;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
-@SuppressWarnings({"unused", "WeakerAccess", "FieldCanBeLocal"})
+@SuppressWarnings({"unused", "WeakerAccess", "FieldCanBeLocal", "RedundantSuppression"})
 public class CLIArguments {
-	CLIArguments() {}// No instantiating!
+	CLIArguments() {}// No instantiating from outside the package!
 
 //	public class StringListToVector implements IStringConverter<Vector<String>>{
 //		@Override
@@ -26,21 +27,23 @@ public class CLIArguments {
 	//  Is an option treated as implicitly required if its names attribute is empty, or should it still be explicitly specified as true?
 	// ???: What happens if @SubParameter(order < 0) ??
 
-
 	@Parameter(
-		description = "List of all audio files to try playing", //consider saying something about directory parameters
+		description = "File...",
 		variableArity = true,
-		converter = FileConverter.class
+		order = 0//,
 	)
 	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-	private List<File> __audioFiles;    //TODO: I should really be using a converter here, but this is fine for now
-
+	private List<String> __audioFiles;    //TODO: I should really be using a listConverter here, but this is fine for now
+	static final String realAudioFilesParamDescription =
+		"FILE is a space-separated list of one or more audio files to try playing, " +
+		"and can also include directories through which to traverse for audio files.";
 	private Vector<File> audioFiles = null;
 
 	/*
 	On first call, initializes the audioFiles Vector from the contents of the __audioFiles List
 	If traverseDirectoriesEnabled == true, also traverses up to maxDepth directory levels, adding discovered files to the audioFiles Vector
-	Returns that audioFiles Vector on subsequent calls
+	Returns that audioFiles Vector on subsequent calls.
+	If there are no file parameters, or no files remain after expansion and filtering, returns null.
 	 */
 	public Vector<File> getAudioFiles() {
 		/*
@@ -53,7 +56,8 @@ public class CLIArguments {
 			it then uses its package-access to setAudioFiles
 		*/
 
-		if (audioFiles == null) {
+		if (this.__audioFiles == null) {return null;}
+		else if (this.audioFiles == null) {
 			/*
 			Interestingly, "" appears to be a valid file path; it seems to be equivalent to "."?
 			Not sure if this is desirable behavior, so for now it's getting discarded
@@ -62,12 +66,12 @@ public class CLIArguments {
 			  Java has decided not to escape spaces(even those explicitly escaped) in command line parameters enclosed in single-quotes, AND
 			    throws a fatal exception upon encountering a colon in such a parameter
 			 */
-			AssortedUtils.inverseFilter(__audioFiles, f -> StringUtils.isNullOrBlank(f.getPath()));
+			this.audioFiles = this.__audioFiles.stream().map(File::new).collect(Collectors.toCollection(Vector::new));
+			AssortedUtils.inverseFilter(this.audioFiles, f -> StringUtils.isNullOrBlank(f.getPath()));
 
-			audioFiles = new Vector<>(__audioFiles);
-			audioFiles = FileUtils.expandFileList(audioFiles, isDirectoryTraversalEnabled(), getMaxDepth());
+			this.audioFiles = FileUtils.expandFileList(this.audioFiles, this.traverseDirectoriesEnabled, this.maxDepth);
 		}
-		return audioFiles;
+		return this.audioFiles;
 	}
 
 //	void setAudioFiles(Vector<File> files) { audioFiles = files;}
@@ -75,11 +79,12 @@ public class CLIArguments {
 
 	@Parameter(
 		names = {"-d", "--traverse"},
-		description = "Traverse through any directory arguments for additional audio files to play."
+		description = "Traverse through any directory arguments for additional audio files to play.",
+		order = 1
 	)
 	private boolean traverseDirectoriesEnabled = false;
 
-	public boolean isDirectoryTraversalEnabled() {return traverseDirectoriesEnabled;}
+	public boolean isDirectoryTraversalEnabled() {return this.traverseDirectoriesEnabled;}
 
 
 //	@Parameter(
@@ -90,11 +95,11 @@ public class CLIArguments {
 
 
 	@Parameter(
-		names = {"--max_depth"}, description = "Maximum number of directory levels to search."
+		names = {"--max_depth"}, description = "Maximum number of directory levels to search.", order = 2
 	)
 	private int maxDepth = Integer.MAX_VALUE;
 
-	public int getMaxDepth() { return maxDepth;}
+	public int getMaxDepth() { return this.maxDepth;}
 
 	//TODO: Validator
 	//  Complain if maxDepth parameter was provided without the traversal parameter
@@ -109,11 +114,10 @@ public class CLIArguments {
 	private List<File> manifests;
 	*/
 
-
-	@Parameter(names = {"-help"}, description = "Displays this great message", help = true)
+	@Parameter(names = {"-h", "--help"}, description = "Displays this great message", help = true)
 	private boolean helpEnabled;
 
-	public boolean isHelpEnabled() { return helpEnabled;}
+	public boolean isHelpEnabled() { return this.helpEnabled;}
 
 	/*============ HIDDEN PARAMETERS ============*/
 
@@ -123,6 +127,6 @@ public class CLIArguments {
 	)
 	private boolean disablePlayback = false;
 
-	public boolean isPlaybackDisabled() {return disablePlayback;}
+	public boolean isPlaybackDisabled() {return this.disablePlayback;}
 
 }

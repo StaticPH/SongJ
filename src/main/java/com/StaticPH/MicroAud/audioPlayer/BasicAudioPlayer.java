@@ -10,9 +10,12 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.StaticPH.MicroAud.AssortedUtils.doze;
-import static com.StaticPH.MicroAud.audioPlayer.PlaybackHelpers.getUnsupportedAudioFileMessage;
+import static com.StaticPH.MicroAud.audioPlayer.PlaybackHelpers.*;
 
 //java.util.Vector is a good conceptual example of a class that extends an abstract class
 
@@ -20,16 +23,21 @@ import static com.StaticPH.MicroAud.audioPlayer.PlaybackHelpers.getUnsupportedAu
 public class BasicAudioPlayer extends AbstractAudioPlayer {
 	public static final Logger loggo = AssortedUtils.getLogger("BasicAudioPlayer");
 
+
+	// The faster approach is to just check file extensions, but extensions dont have to match the file's actual contents...
+	//	protected static final Set<String> supportedTypes = new HashSet<>(Arrays.asList(".wav", ".au", ".aiff", ".mid"));
+
+	//Populate with the content-type of supported files
+	// TODO: test playback and quality of aifc, 8svx, MThd, MTrk, and anything else that .aiff, .au, and .mid can be
+	protected static final Set<String> supportedTypes = new HashSet<>(Arrays.asList("WAV", "AIFF"));
+
+	@Override
+	public Set<String> getSupportedTypes() { return supportedTypes;}
+
+	static { PlayerTypeMap.insert(new BasicAudioPlayer(), supportedTypes);}
+
+
 	public BasicAudioPlayer() {}
-
-	/* I dont think I really WANT this to be static?
-		feels like doing so would risk the program attempting to play all files at once or something equally undesirable
-		(Which I MIGHT still like to be POSSIBLE by giving each instance of a player its own playback thread,
-		as opposed to having all players of a particular type share 1, or all players of all types)
-
-		IDEALLY I'd be able to somehow instruct the program to use a particular implementation
-		???:Some sort of factory perhaps?
-	 */
 
 	/**
 	 * Play <tt>.wav</tt>, <tt>.au</tt>, or <tt>.aiff</tt> files, and anything else included in
@@ -43,18 +51,15 @@ public class BasicAudioPlayer extends AbstractAudioPlayer {
 	 */
 	@SuppressWarnings("DanglingJavadoc")
 	@Override
-	public void playFile(File file) {
+	public void playFile(File file) throws UnsupportedAudioFileException {
 		/**
 		 * Throws IOException by way of <tt>reader.getAudioInputStream(file)</tt>
 		 * at line 1181 of {@link AudioSystem#getAudioInputStream(File)}
 		 * That function (reader.getAudioInputStream) is then defined in different FileReader implementations
 		 */
+		//TODO: Maybe this should be converted to use a SourceDataLine like the other two...
 		try { playClipFromStream(AudioSystem.getAudioInputStream(file));}
 		catch (IOException e) { e.printStackTrace();}
-		catch (UnsupportedAudioFileException e) {
-			//TODO: this exception should really be passed all the way up before being caught
-			System.out.println(getUnsupportedAudioFileMessage(file.getName()));
-		}
 	}
 
 	/**
@@ -72,11 +77,8 @@ public class BasicAudioPlayer extends AbstractAudioPlayer {
 	public static void playClipFromStream(AudioInputStream audIn) {
 		try (Clip clip = AudioSystem.getClip()) {
 			clip.open(audIn);
-			System.out.println("Duration: " + PlaybackHelpers.duration(clip.getMicrosecondLength()) + '\n');
+			printDuration(duration(clip.getMicrosecondLength()));
 			clip.start();
-
-			//TODO: switch to giving each player its own thread, or using a single thread shared between players,
-			// but distinct from the program's main thread
 
 			// Keeps main thread alive while audio plays
 			doze(clip.getMicrosecondLength() / 1000);
@@ -85,12 +87,5 @@ public class BasicAudioPlayer extends AbstractAudioPlayer {
 			e.printStackTrace();
 		}
 	}
-
-/*	public void loopClip(Clip c){
-		if (clip.isRunning())
-			clip.stop();   // Stop the player if it is still running
-		clip.setFramePosition(0); // rewind to the beginning
-		clip.start();     // Start playing
-	}*/
 
 }

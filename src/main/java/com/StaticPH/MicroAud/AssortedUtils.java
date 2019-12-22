@@ -3,7 +3,7 @@ package com.StaticPH.MicroAud;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.function.Predicate;
-//import java.util.logging.Logger;
+
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
@@ -11,8 +11,7 @@ import org.apache.logging.log4j.LogManager;
 public final class AssortedUtils {
 	private static Logger loggo = LogManager.getLogger("AssortedUtils");
 
-	// I need to either allow instantiation, make all the methods static, or not make the class final so that I can subclass it
-//	private AssortedUtils() {}//no instantiating
+	private AssortedUtils() {}//no instantiating
 
 	//???: Is it even worth doing this instead of just including the import for LogManager everywhere?
 	public static Logger getLogger(String name) { return LogManager.getLogger(name); }
@@ -29,7 +28,22 @@ public final class AssortedUtils {
 	/** Print the classpath for this module */
 	public static void printClasspath() { System.out.println(System.getProperty("java.class.path"));}
 
-	static void printn(Object... objs) {
+	/**
+	 * Try to initialize a class from its fully qualified name.
+	 *
+	 * @param qualName The fully qualified name of the class
+	 */
+	public static void tryInitClass(String qualName) {
+		try { Class.forName(qualName, true, ClassLoader.getSystemClassLoader()); }
+		catch (ClassNotFoundException e) {
+			loggo.warn(
+				"Unable to locate \"{}\".\n\tCheck that the binary name for this class is correct." +
+				"\n\tFailure to locate the class may cause problems.", qualName
+			);
+		}
+	}
+
+	public static void printn(Object... objs) {
 		for (Object obj : objs) {
 			System.out.print(obj);
 		}
@@ -84,18 +98,6 @@ public final class AssortedUtils {
 		return didModify;
 	}
 
-/*      YUNO???
-	public static <T> void toss(Iterable<T> iterable){
-		Predicate<?super T> p = new Predicate() {
-			@Override
-			public boolean test(Object o) {
-				return StringUtils.isNullOrEmpty(o.toString());
-			}
-		};
-		AssortedUtils.inverseFilter(iterable, p );
-	}
-*/
-
 	/**
 	 * Create a <tt>byte</tt> array full of null bytes
 	 *
@@ -108,11 +110,7 @@ public final class AssortedUtils {
 		return bytes;
 	}
 
-	public static void printBar() {
-		System.out.println("\033[1;36m" + StringUtils.charNTimes('=', 48) + "\033[0m" + '\n');
-	}
-
-	/** Hide away the exception handling for a Thread.sleep() call. */
+	/** Wrapper around a Thread.sleep() call just to hide away the exception handling. */
 	public static void doze(long timeoutSec) {
 		try { Thread.sleep(timeoutSec);}
 		catch (InterruptedException e) { e.printStackTrace();}

@@ -11,10 +11,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.StaticPH.MicroAud.AssortedUtils.getLogger;
 import static com.StaticPH.MicroAud.AssortedUtils.getNullBytes;
-import static com.StaticPH.MicroAud.audioPlayer.PlaybackHelpers.getUnsupportedAudioFileMessage;
 
 /**
  * TODO: DOCUMENT ME
@@ -22,6 +24,19 @@ import static com.StaticPH.MicroAud.audioPlayer.PlaybackHelpers.getUnsupportedAu
 @SuppressWarnings({"unused", "WeakerAccess", "LocalCanBeFinal"})
 public final class VorbisAudioPlayer extends SpecializedAudioPlayer {
 	private static final Logger loggo = getLogger("VorbisAudioPlayer");
+
+	// The faster approach is to just check file extensions, but extensions dont have to match the file's actual contents...
+	//	protected static final Set<String> supportedTypes = new HashSet<>(Arrays.asList(".ogg", ".oga"));
+
+	//Populate with the content-type of supported files
+	// TODO: Find out if this will also properly handle flac, theora, speex, and opus files
+	protected static final Set<String> supportedTypes = new HashSet<>(Arrays.asList("OGG"));
+
+	@Override
+	public Set<String> getSupportedTypes() { return supportedTypes;}
+
+	static { PlayerTypeMap.insert(new VorbisAudioPlayer(), supportedTypes);}
+
 
 	public VorbisAudioPlayer() { super(loggo); }
 
@@ -68,26 +83,16 @@ public final class VorbisAudioPlayer extends SpecializedAudioPlayer {
 	}
 
 	@Override
-	public void playFile(File file) {
+	public void playFile(File file) throws UnsupportedAudioFileException {
 		loggo.debug("file length = {}", file::length);
 
 		try {
-			// This WAS necessary... and somehow isn't after some refactoring...
-//			File useFile = file.length() >= tooShort ? file : padTempFile(file);
-			this.play(AudioSystem.getAudioInputStream(file), vorbisDuration(file.getPath()));
+			// And now it's necessary again. I don't even...
+			File useFile = file.length() >= tooShort ? file : padTempFile(file);
+			this.play(AudioSystem.getAudioInputStream(useFile), vorbisDuration(file.getPath()));
 		}
 		catch (IOException e) { e.printStackTrace(); }
-		catch (UnsupportedAudioFileException e) {
-			//TODO: this exception should really be passed all the way up before being caught
-			System.out.println(getUnsupportedAudioFileMessage(file.getName()));
-		}
 	}
-
-	//	new Thread(()-> {
-//		try { streamAudioOut(getAudioInputStream(outFormat, audIn), line); }
-//		catch (IOException e) { throw new IllegalStateException(e); }
-//	});
-
 
 	/**
 	 * @param filePath A <tt>String</tt> representing the path to a known-to-exist file;
@@ -102,20 +107,3 @@ public final class VorbisAudioPlayer extends SpecializedAudioPlayer {
 	}
 
 }
-
-/*
-try these:
-	get file size; if less than ??7kb?? try to pad the stream, and see if it plays properly after decoding occurs
-
-	create a fallback play method ; within either playFile or playClipFromStream,
-	either
-	try to force decode the stream to a KNOWN VIABLE format and play that version
-	or
-	fall back to playing the non-decoded version; print a message apologizing for what will likely be garbled audio
-
-	replace parts of the original library according to the suggested workaround i found on stackexchange
-
-	investigate the possibility of converting the ogg file to an in-memory-only wav file, and play that as usual
-
-	seek out alternative libraries, including MAINTAINED bindings to libraries written in other languages.
-*/

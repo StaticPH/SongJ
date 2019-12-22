@@ -10,6 +10,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import java.io.IOException;
 
+import static com.StaticPH.MicroAud.audioPlayer.PlaybackHelpers.printDuration;
 import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
 import static javax.sound.sampled.AudioSystem.getAudioInputStream;
 
@@ -29,10 +30,6 @@ public abstract class SpecializedAudioPlayer extends AbstractAudioPlayer {
 		this.loggo = logger;
 		this.bufferSize = bufferSize;
 	}
-
-//	???: Do I WANT this here, or is it sufficient with just the extends statement by itself?
-//	@Override
-//	public abstract void playFile(File file) throws UnsupportedAudioFileException;
 
 	protected static AudioFormat getOutFormat(AudioFormat inFormat) {
 		final int ch = inFormat.getChannels();
@@ -56,7 +53,10 @@ public abstract class SpecializedAudioPlayer extends AbstractAudioPlayer {
 
 	protected void play(AudioInputStream audIn, long fileDuration) {
 		final AudioFormat outFormat = getOutFormat(audIn.getFormat());
-		final String durationAsString = (fileDuration != -1 ? PlaybackHelpers.duration(fileDuration) : PlaybackHelpers.duration(audIn, outFormat));
+		final String durationAsString = (
+			fileDuration != -1 ? PlaybackHelpers.duration(fileDuration)
+			                   : PlaybackHelpers.duration(audIn, outFormat)
+		);
 		final DataLine.Info info = new DataLine.Info(SourceDataLine.class, outFormat);
 
 		try (final SourceDataLine line = (SourceDataLine) AudioSystem.getLine(info)) {
@@ -64,7 +64,7 @@ public abstract class SpecializedAudioPlayer extends AbstractAudioPlayer {
 			if (line != null) {
 				line.open(outFormat);
 
-				System.out.println("\033[35mDuration: " + durationAsString + "\033[0m");
+				printDuration(durationAsString);
 
 				line.start();
 

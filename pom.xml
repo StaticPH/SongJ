@@ -13,6 +13,20 @@
 		If outside, does before/after matter?
 	-->
 
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<!--	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
+		<!--	<project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding> -->
+		<!--Non-default Maven plugin versions -->
+		<!--	<maven.assembly.version></maven.assembly.version> -->
+		<!--	<maven.bundle.version></maven.bundle.version> -->
+		<!--	<maven.failsafe.version></maven.bundle.version> -->
+		<!--	<maven.javadoc.version></maven.javadoc.version> -->
+		<!--	<maven.release.version></maven.release.version> -->
+		<plugin.versions.version>2.7</plugin.versions.version>
+	</properties>
+
 	<groupId>com.StaticPH</groupId>
 	<artifactId>MicroAud</artifactId>
 	<version>1.0-ALPHA</version>
@@ -42,11 +56,16 @@
 			<artifactId>log4j-core</artifactId>
 			<version>2.12.1</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.apache.logging.log4j</groupId>-->
-<!--			<artifactId>log4j-slf4j-impl</artifactId>-->
-<!--			<version>2.12.1</version>-->
-<!--		</dependency>-->
+		<!--		<dependency>-->
+		<!--			<groupId>org.apache.logging.log4j</groupId>-->
+		<!--			<artifactId>log4j-slf4j-impl</artifactId>-->
+		<!--			<version>2.12.1</version>-->
+		<!--		</dependency>-->
+		<dependency>
+			<groupId>com.j256.simplemagic</groupId>
+			<artifactId>simplemagic</artifactId>
+			<version>1.16</version>
+		</dependency>
 	</dependencies>
 
 	<!-- OPTIONAL: Conversational name for the project. Use the artifactId as a default. -->
@@ -67,46 +86,34 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<!--version 3.1 is just the version bundled in with intellij at the moment-->
 				<version>3.1</version>
-				<!--
-				Why on Earth is this defaulting to Java 5 anyways?!?!
-				Java 5 is HOW MANY years out of date now?? Extended support for it ended in April of 2015!!
-
-				My project's SDK is set to Java 8, and I'd have expected IntelliJ's Maven integration to be smart enough to automatically
-				assign the bytecode target/source accordingly. At least in the case of a single module project, where there's no reason
-				to build with a JDK older than the target version.
-				-->
 				<configuration>
-					<source>8</source>
-					<target>8</target>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
-				<version>2.7</version>
+				<version>${plugin.versions.version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.6</version>
 			</plugin>
 		</plugins>
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
-<!--				<includes>-->
-<!--					<include>**/*.properties</include>-->
-<!--					<include>**.*</include>-->
-<!--				</includes>-->
+				<!--				<excludes>-->
+				<!--					<exclude>props/*</exclude>-->
+				<!--				</excludes>-->
 			</resource>
 			<resource>
 				<directory>src/main/resources/props</directory>
 			</resource>
 		</resources>
 	</build>
-
-	<!--	This should also work as an alternative to to adjusting <plugin> things under <build>-->
-	<!--	<properties>-->
-	<!--		<maven.compiler.source>1.8</maven.compiler.source>-->
-	<!--		<maven.compiler.target>1.8</maven.compiler.target>-->
-	<!--        I don't yet know what this would do -->
-	<!--	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>     -->
-	<!--	</properties>-->
 
 	<!--OPTIONAL: Only useful for multi-module projects, each of which tends to have its own pom.xml file, whose parent is the top level pom file-->
 	<!--	<modules>-->
