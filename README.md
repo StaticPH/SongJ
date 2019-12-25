@@ -1,7 +1,9 @@
 SongJ
 =====
 <p align="center">
-    <a href="LICENSE.md"><img src="https://badgen.net/github/license/blob/master/LICENSE.md" /></a>    
+	<a href="LICENSE.md"><img src="https://badgen.net/badge/license/MIT/blue"></a>
+    <img src="https://badgen.net/github/release/StaticPH/SongJ/">
+    <img src="https://img.shields.io/github/downloads/StaticPH/SongJ/total">
 </p>
 TODO: Description
 
