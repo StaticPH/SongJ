@@ -1,6 +1,6 @@
-package com.StaticPH.MicroAud.audioPlayer;
+package com.StaticPH.SongJ.audioPlayer;
 
-import com.StaticPH.MicroAud.AssortedUtils;
+import com.StaticPH.SongJ.AssortedUtils;
 import org.apache.logging.log4j.Logger;
 
 import javax.sound.sampled.AudioInputStream;
@@ -14,8 +14,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.StaticPH.MicroAud.AssortedUtils.doze;
-import static com.StaticPH.MicroAud.audioPlayer.PlaybackHelpers.*;
+import static com.StaticPH.SongJ.AssortedUtils.doze;
+import static com.StaticPH.SongJ.audioPlayer.PlaybackHelpers.*;
 
 //java.util.Vector is a good conceptual example of a class that extends an abstract class
 
@@ -28,8 +28,9 @@ public class BasicAudioPlayer extends AbstractAudioPlayer {
 	//	protected static final Set<String> supportedTypes = new HashSet<>(Arrays.asList(".wav", ".au", ".aiff", ".mid"));
 
 	//Populate with the content-type of supported files
-	// TODO: test playback and quality of aifc, 8svx, MThd, MTrk, and anything else that .aiff, .au, and .mid can be
-	protected static final Set<String> supportedTypes = new HashSet<>(Arrays.asList("WAV", "AIFF"));
+	// TODO: Test playback and quality of aifc, 8svx, MThd, MTrk, and anything else that .aiff, .au, and .mid can be
+	// ???: Perhaps this would be better as an enum?
+	protected static final Set<String> supportedTypes = new HashSet<>(Arrays.asList("WAV", "AIFF", "MIDI", "SND"));
 
 	@Override
 	public Set<String> getSupportedTypes() { return supportedTypes;}
@@ -87,5 +88,4 @@ public class BasicAudioPlayer extends AbstractAudioPlayer {
 			e.printStackTrace();
 		}
 	}
-
 }

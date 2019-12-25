@@ -1,12 +1,15 @@
-package com.StaticPH.MicroAud.audioPlayer;
+package com.StaticPH.SongJ.audioPlayer;
 
-import com.StaticPH.MicroAud.StringUtils;
+import com.StaticPH.SongJ.StringUtils;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.Clip;
 import java.io.File;
 import java.util.Vector;
+
+import static com.StaticPH.SongJ.Constants.Colors.FG;
+import static com.StaticPH.SongJ.Constants.Colors;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class PlaybackHelpers {
@@ -69,19 +72,21 @@ public final class PlaybackHelpers {
 	public static String duration(AudioInputStream audIn) { return duration(audIn, audIn.getFormat());}
 
 	public static void printBar() {
-		System.out.println("\n\033[1;36m" + StringUtils.charNTimes('=', 48) + "\033[0m" + '\n');
+		System.out.println(
+			'\n' + FG.BR_CYAN + StringUtils.charNTimes('=', 48) + Colors.DEFAULT + '\n'
+		);
 	}
 
 	public static void printNowPlaying(AbstractAudioPlayer A, File file) {
 		//A.getClass().getName() to show package path too
 		System.out.println(
-			"\033[35mPlayer: \033[1;35m" + A.getClass().getSimpleName() +
-			"\033[0;35m NOW PLAYING \"" + file.getPath() + "\"\033[0m"
+			FG.MAGENTA + "Player: " + FG.BR_MAGENTA + A.getClass().getSimpleName() +
+			FG.MAGENTA + " NOW PLAYING \"" + file.getPath() + '"' + Colors.DEFAULT
 		);
 	}
 
 	public static void printDuration(String len) {
-		System.out.println("\033[35mDuration: " + len + "\033[0m");
+		System.out.println(FG.MAGENTA + "Duration: " + len + Colors.DEFAULT);
 	}
 
 	public static String getUnsupportedAudioFileMessage(String filename) {

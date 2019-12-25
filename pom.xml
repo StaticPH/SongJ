@@ -5,14 +5,6 @@
 
 	<!-- POM documentation at https://maven.apache.org/pom.html -->
 
-	<!--
-		DISCOVER: Does it matter where in the file I place <parents>, <build>, <packaging>, and <modules>?
-		Do any of them need to be placed before or after some specific element?
-
-		Should <dependencies> be within <dependencyManagement>, or outside of it?
-		If outside, does before/after matter?
-	-->
-
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
@@ -28,8 +20,8 @@
 	</properties>
 
 	<groupId>com.StaticPH</groupId>
-	<artifactId>MicroAud</artifactId>
-	<version>1.0-ALPHA</version>
+	<artifactId>SongJ</artifactId>
+	<version>1.0-BETA</version>
 	<dependencies>
 		<dependency>
 			<groupId>com.beust</groupId>
@@ -56,11 +48,6 @@
 			<artifactId>log4j-core</artifactId>
 			<version>2.12.1</version>
 		</dependency>
-		<!--		<dependency>-->
-		<!--			<groupId>org.apache.logging.log4j</groupId>-->
-		<!--			<artifactId>log4j-slf4j-impl</artifactId>-->
-		<!--			<version>2.12.1</version>-->
-		<!--		</dependency>-->
 		<dependency>
 			<groupId>com.j256.simplemagic</groupId>
 			<artifactId>simplemagic</artifactId>
@@ -69,9 +56,9 @@
 	</dependencies>
 
 	<!-- OPTIONAL: Conversational name for the project. Use the artifactId as a default. -->
-	<name>Tiny CLI Audio Player</name>
+	<name>SongJ</name>
 	<!--OPTIONAL: Simple description of the project-->
-	<!--    <description>YOUR DESCRIPTION HERE</description>-->
+    <description>Small and extensible CLI audio player</description>
 
 	<!--OPTIONAL: When unspecified, 'jar' is the default packaging method.-->
 	<!--Replace 'jar' with 'pom' for the top level pom.xml file in multi-module projects.-->

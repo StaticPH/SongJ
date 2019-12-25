@@ -1,4 +1,4 @@
-package com.StaticPH.MicroAud.audioPlayer;
+package com.StaticPH.SongJ.audioPlayer;
 
 import org.apache.logging.log4j.Logger;
 
@@ -10,7 +10,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import java.io.IOException;
 
-import static com.StaticPH.MicroAud.audioPlayer.PlaybackHelpers.printDuration;
+import static com.StaticPH.SongJ.audioPlayer.PlaybackHelpers.printDuration;
 import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
 import static javax.sound.sampled.AudioSystem.getAudioInputStream;
 

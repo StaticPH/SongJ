@@ -1,32 +1,34 @@
-package com.StaticPH.MicroAud;
+package com.StaticPH.SongJ;
 
-import com.StaticPH.MicroAud.audioPlayer.AbstractAudioPlayer;
-import com.StaticPH.MicroAud.audioPlayer.PlaybackHelpers;
-import com.StaticPH.MicroAud.audioPlayer.PlayerTypeMap;
-import com.StaticPH.MicroAud.cli.ArgManager;
-import com.StaticPH.MicroAud.cli.CLIArguments;
+import com.StaticPH.SongJ.audioPlayer.AbstractAudioPlayer;
+import com.StaticPH.SongJ.audioPlayer.PlaybackHelpers;
+import com.StaticPH.SongJ.audioPlayer.PlayerTypeMap;
+import com.StaticPH.SongJ.cli.ArgManager;
+import com.StaticPH.SongJ.cli.CLIArguments;
 import org.apache.logging.log4j.Logger;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Properties;
 import java.util.Vector;
 
-import static com.StaticPH.MicroAud.StringUtils.delimitStrings;
-import static com.StaticPH.MicroAud.audioPlayer.PlaybackHelpers.*;
+import static com.StaticPH.SongJ.Constants.Colors;
+import static com.StaticPH.SongJ.StringUtils.delimitStrings;
+import static com.StaticPH.SongJ.audioPlayer.PlaybackHelpers.*;
 
 
 @SuppressWarnings({"WeakerAccess", "unused", "RedundantSuppression"})
-public class MicroAud {
+public class SongJ {
 	// ======= Class (Static) Variables ======= //
-	private static final Logger loggo = AssortedUtils.getLogger("MicroAud");
+	private static final Logger loggo = AssortedUtils.getLogger("SongJ");
 
 	// ======= Instance (Non-Static) Variables ======= //
 
 	// ======= Class Constructors ======= //
-	public MicroAud() {}
+	public SongJ() {}
 
 	// ======= Methods ======= //
 
@@ -50,6 +52,7 @@ public class MicroAud {
 		String contentType = FileUtils.magicTest(file);
 		AbstractAudioPlayer A;
 		try {
+			printBar();
 			A = PlayerTypeMap.getPlayerWithMappingTo(contentType.toUpperCase());
 		}
 		catch (UnsupportedAudioFileException e) {
@@ -62,8 +65,7 @@ public class MicroAud {
 			printNowPlaying(A, file);
 //				A.setShow_ms(true);
 			A.playFile(file);
-			System.out.println("\033[1;32mFinished playing from " + file.getPath() + "\033[0m");
-			printBar();
+			System.out.println(Colors.FG.BR_GREEN + "Finished playing from " + file.getPath() + Colors.DEFAULT);
 		}
 		catch (UnsupportedAudioFileException e) {
 			loggo.warn(e.fillInStackTrace());
@@ -73,23 +75,26 @@ public class MicroAud {
 
 	public static void doAud(Path path) { doAud(path.toFile());}
 
-	public static void processFiles(CLIArguments arguments) throws FileNotFoundException {
-		Vector<File> filesToPlay = new Vector<>(arguments.getAudioFiles());
+	public static void processFiles(
+		Collection<? extends File> files, boolean isPlaybackDisabled
+	) throws FileNotFoundException {
+		Vector<File> filesToPlay = new Vector<>(files);
 
-		if (arguments.isPlaybackDisabled()) {loggo.info("Playback Disabled");}
+		if (isPlaybackDisabled) {loggo.info("Playback Disabled");}
 
-		//TODO: Consider adding support for shuffling the queue with Collections.shuffle
+		//TODO: Add support for shuffling the queue with Collections.shuffle
 		PlaybackHelpers.printPlayQueue(filesToPlay);
 
-		if (!arguments.isPlaybackDisabled()) {
+		if (!isPlaybackDisabled) {
 			preloadPlayers();
-			filesToPlay.forEach(MicroAud::doAud);
+			filesToPlay.forEach(SongJ::doAud);
+			printBar();
 		}
 	}
 
 	public static void main(String[] args) {
 		ArgManager argManager = new ArgManager(args);
-		argManager.setProgramDesc("TODO: PROPER DESCRIPTION"); //TODO: Proper description
+//		argManager.setProgramDesc(""); TODO: Proper description
 
 		// If an issue with the arguments has already resulted in a call to the JCommander.usage() method, exit
 		if (!argManager.init()) { System.exit(1); }
@@ -102,7 +107,7 @@ public class MicroAud {
 		}
 
 		try {
-			processFiles(arguments);
+			processFiles(arguments.getAudioFiles(), arguments.isPlaybackDisabled());
 		}
 		catch (FileNotFoundException e) {
 			loggo.fatal(e.fillInStackTrace());
@@ -111,4 +116,3 @@ public class MicroAud {
 		}
 	}
 }
-//todo: honor NO_COLOR environment variable. System.getenv("NO_COLOR")      in log4j2.properties, use ${env:NO_COLOR}

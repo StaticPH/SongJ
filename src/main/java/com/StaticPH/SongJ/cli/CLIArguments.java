@@ -1,10 +1,9 @@
-package com.StaticPH.MicroAud.cli;
+package com.StaticPH.SongJ.cli;
 
-import com.StaticPH.MicroAud.AssortedUtils;
-import com.StaticPH.MicroAud.FileUtils;
-import com.StaticPH.MicroAud.StringUtils;
+import com.StaticPH.SongJ.AssortedUtils;
+import com.StaticPH.SongJ.FileUtils;
+import com.StaticPH.SongJ.StringUtils;
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.converters.FileConverter;
 
 import java.io.File;
 import java.util.List;
@@ -21,11 +20,6 @@ public class CLIArguments {
 //
 //		}
 //	}
-
-
-	// ???: what behavior does the default value of arity(-1) result in
-	//  Is an option treated as implicitly required if its names attribute is empty, or should it still be explicitly specified as true?
-	// ???: What happens if @SubParameter(order < 0) ??
 
 	@Parameter(
 		description = "File...",
@@ -108,13 +102,18 @@ public class CLIArguments {
 	// example: https://github.com/Nincraft/ModPackDownloader/blob/master/modpackdownloader-core/src/main/java/com/nincraft/modpackdownloader/validation/ReleaseType.java
 
 
+	@Parameter(names="--color", description = "Enables colored output")
+	private boolean colorOutput = false;
+
+	public boolean useColor(){return this.colorOutput;}
+
 	/*EXAMPLE
 	@Parameter(names = {"-manifest", "-manifests"}, description = "List of manifests to use for downloading/updating",
 		listConverter = FileConverter.class)
 	private List<File> manifests;
 	*/
 
-	@Parameter(names = {"-h", "--help"}, description = "Displays this great message", help = true)
+	@Parameter(names = {"-h", "--help"}, description = "Displays this help message", help = true)
 	private boolean helpEnabled;
 
 	public boolean isHelpEnabled() { return this.helpEnabled;}
@@ -122,7 +121,7 @@ public class CLIArguments {
 	/*============ HIDDEN PARAMETERS ============*/
 
 	@Parameter(
-		names = {"--list-only"}, hidden = true,
+		names = {"--list_only"}, hidden = true,
 		description = "Whether to only display the final play queue, and not attempt to play anything."
 	)
 	private boolean disablePlayback = false;

@@ -1,6 +1,6 @@
-package com.StaticPH.MicroAud.audioPlayer;
+package com.StaticPH.SongJ.audioPlayer;
 
-import com.StaticPH.MicroAud.AssortedUtils;
+import com.StaticPH.SongJ.AssortedUtils;
 import org.apache.logging.log4j.Logger;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -9,10 +9,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.Vector;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings({"unused", "WeakerAccess", "RedundantSuppression"})
 public class PlayerTypeMap {    //TODO: DOCUMENT ME
@@ -27,7 +28,7 @@ public class PlayerTypeMap {    //TODO: DOCUMENT ME
 
 	//FIXME: I RETURN NULL CONSISTENTLY
 	public static Set<String> get(AbstractAudioPlayer player) {
-		Objects.requireNonNull(player);
+		requireNonNull(player);
 		return playermap.get(player);
 	}
 
@@ -56,8 +57,7 @@ public class PlayerTypeMap {    //TODO: DOCUMENT ME
 	public static boolean containsValue(Set<String> s) {return playermap.containsValue(s);}
 
 	public static boolean containsMapping(AbstractAudioPlayer player, String str) {
-		Objects.requireNonNull(player);
-//		Objects.requireNonNull(str);
+		requireNonNull(player);
 		Set<String> s = playermap.get(player);
 		return (s != null && s.contains(str));
 //		if (!containsKey(player)){return false;}
@@ -69,6 +69,7 @@ public class PlayerTypeMap {    //TODO: DOCUMENT ME
 	}
 
 	public static AbstractAudioPlayer getPlayerWithMappingTo(String str) throws UnsupportedAudioFileException {
+		requireNonNull(str);
 		// Treats all values as uppercase for simplicity. Hope this doesnt backfire.
 		Vector<AbstractAudioPlayer> players =
 			playermap.keySet().stream()
@@ -81,7 +82,7 @@ public class PlayerTypeMap {    //TODO: DOCUMENT ME
 		AbstractAudioPlayer player =
 			players.stream().findAny().orElseThrow(
 				() -> new UnsupportedAudioFileException(
-					"No mapping exists for an AudioPlayer capable of handling type \"" + str +'\"'
+					"No mapping exists for an AudioPlayer capable of handling type \"" + str + '\"'
 				)
 			);
 		loggo.info("Using AudioPlayer \"" + player.getClass().getSimpleName() + '"');
@@ -89,8 +90,8 @@ public class PlayerTypeMap {    //TODO: DOCUMENT ME
 	}
 
 	public static void mergeKeySets(AbstractAudioPlayer player, Set<String> set) {
-		Objects.requireNonNull(player);
-		Objects.requireNonNull(set);
+		requireNonNull(player);
+		requireNonNull(set);
 		playermap.merge(player, set, (set1, set2) -> {
 			set1.addAll(set2);
 			return set1;
@@ -98,8 +99,8 @@ public class PlayerTypeMap {    //TODO: DOCUMENT ME
 	}
 
 	public static void insert(AbstractAudioPlayer player, Set<String> set) {
-		Objects.requireNonNull(player);
-		Objects.requireNonNull(set);
+		requireNonNull(player);
+		requireNonNull(set);
 		if (playermap.containsKey(player)) {
 			mergeKeySets(player, set);
 		}
@@ -107,8 +108,8 @@ public class PlayerTypeMap {    //TODO: DOCUMENT ME
 	}
 
 	public static void insert(AbstractAudioPlayer player, String str) {
-		Objects.requireNonNull(player);
-		Objects.requireNonNull(str);
+		requireNonNull(player);
+		requireNonNull(str);
 		Set<String> set = Collections.singleton(str);
 		if (playermap.containsKey(player)) {
 			mergeKeySets(player, set);
@@ -117,8 +118,8 @@ public class PlayerTypeMap {    //TODO: DOCUMENT ME
 	}
 
 	public static void insert(AbstractAudioPlayer player, String... strings) {
-		Objects.requireNonNull(player);
-		Objects.requireNonNull(strings);
+		requireNonNull(player);
+		requireNonNull(strings);
 		Set<String> set = new HashSet<>();
 		Collections.addAll(set, strings);
 		if (playermap.containsKey(player)) {
@@ -128,19 +129,19 @@ public class PlayerTypeMap {    //TODO: DOCUMENT ME
 	}
 
 	//FIXME: I THROW NPE CONSISTENTLY BECAUSE playermap.get IS NOT BEHAVING AS EXPECTED
-	public static boolean remove(AbstractAudioPlayer player, String str) {
-		Objects.requireNonNull(player);
-		Objects.requireNonNull(str);
-		Set<String> s = playermap.get(player); //apparently playermap.get is returning null now???
-		if (s.size() >= 1) {
-			playermap.remove(player);
-			return true;
-		}
-		Set<String> sNew = playermap.get(player).stream().filter(v -> !v.equals(str)).collect(Collectors.toSet());
-		playermap.replace(player, s, sNew);
-		try {return playermap.get(player).remove(str);}
-		catch (NullPointerException e) { return false;}
-	}
+//	public static boolean remove(AbstractAudioPlayer player, String str) {
+//		requireNonNull(player);
+//		requireNonNull(str);
+//		Set<String> s = playermap.get(player); //apparently playermap.get is returning null now???
+//		if (s.size() >= 1) {
+//			playermap.remove(player);
+//			return true;
+//		}
+//		Set<String> sNew = playermap.get(player).stream().filter(v -> !v.equals(str)).collect(Collectors.toSet());
+//		playermap.replace(player, s, sNew);
+//		try {return playermap.get(player).remove(str);}
+//		catch (NullPointerException e) { return false;}
+//	}
 
 	/* The sole non-static method in the class */
 	@Override

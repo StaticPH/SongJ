@@ -1,4 +1,4 @@
-package com.StaticPH.MicroAud.audioPlayer;
+package com.StaticPH.SongJ.audioPlayer;
 
 import com.jcraft.jorbis.JOrbisException;
 import com.jcraft.jorbis.VorbisFile;
@@ -15,13 +15,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.StaticPH.MicroAud.AssortedUtils.getLogger;
-import static com.StaticPH.MicroAud.AssortedUtils.getNullBytes;
+import static com.StaticPH.SongJ.AssortedUtils.getLogger;
+import static com.StaticPH.SongJ.AssortedUtils.getNullBytes;
 
 /**
  * TODO: DOCUMENT ME
  */
-@SuppressWarnings({"unused", "WeakerAccess", "LocalCanBeFinal"})
+@SuppressWarnings({"unused", "WeakerAccess"})
 public final class VorbisAudioPlayer extends SpecializedAudioPlayer {
 	private static final Logger loggo = getLogger("VorbisAudioPlayer");
 
@@ -30,6 +30,7 @@ public final class VorbisAudioPlayer extends SpecializedAudioPlayer {
 
 	//Populate with the content-type of supported files
 	// TODO: Find out if this will also properly handle flac, theora, speex, and opus files
+	@SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
 	protected static final Set<String> supportedTypes = new HashSet<>(Arrays.asList("OGG"));
 
 	@Override
@@ -87,7 +88,6 @@ public final class VorbisAudioPlayer extends SpecializedAudioPlayer {
 		loggo.debug("file length = {}", file::length);
 
 		try {
-			// And now it's necessary again. I don't even...
 			File useFile = file.length() >= tooShort ? file : padTempFile(file);
 			this.play(AudioSystem.getAudioInputStream(useFile), vorbisDuration(file.getPath()));
 		}

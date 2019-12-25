@@ -1,4 +1,4 @@
-package com.StaticPH.MicroAud;
+package com.StaticPH.SongJ;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,14 +24,13 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
-import static com.StaticPH.MicroAud.AssortedUtils.getLogger;
+import static com.StaticPH.SongJ.AssortedUtils.getLogger;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class FileUtils {
 
 	private static final Logger loggo = getLogger("FileUtils");
 
-	//???: is one of these two fileExists methods somehow better, or more robust?
 	public static boolean fileExists(File f) {return f != null && f.exists();}
 
 	public static boolean fileExists(Path p) {return Files.exists(p);}
@@ -108,7 +108,7 @@ public final class FileUtils {
 
 	public static void readFirstNBytes(File file, int numBytes) { readNBytes(file, numBytes, 0);}
 
-	//TODO: MAKE GLOBS WORK AGAIN
+	//FIXME: MAKE GLOBS WORK AGAIN
 	public static Vector<File> expandFileList(Collection<? extends File> files, boolean traverse, int maxDepth) {
 		Vector<File> expandedFiles = new Vector<>();
 		Vector<Path> paths = files.stream().map(File::toPath).collect(Collectors.toCollection(Vector::new));
@@ -120,7 +120,11 @@ public final class FileUtils {
 						walked.map(Path::toFile).collect(Collectors.toCollection(Vector::new))
 					);
 				}
-				catch (IOException e) { loggo.catching(Level.WARN, e);}
+				catch (IOException e) {
+//					if (!(e instanceof NoSuchFileException)) {
+						loggo.catching(Level.WARN, e);
+//					}
+				}
 			}
 		}
 		else {
@@ -207,7 +211,7 @@ public final class FileUtils {
 		return "EMPTY";
 	}
 
-	/*============ HIDDEN PARAMETERS ============*/
+	/*============ Helper Functions ============*/
 
 	/**
 	 * @param file A <tt>File</tt> object

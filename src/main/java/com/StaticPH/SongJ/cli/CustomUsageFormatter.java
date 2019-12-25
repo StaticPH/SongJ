@@ -1,4 +1,4 @@
-package com.StaticPH.MicroAud.cli;
+package com.StaticPH.SongJ.cli;
 
 import com.beust.jcommander.IUsageFormatter;
 import com.beust.jcommander.JCommander;

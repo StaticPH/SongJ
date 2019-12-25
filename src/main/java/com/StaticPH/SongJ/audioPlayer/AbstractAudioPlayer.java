@@ -1,4 +1,4 @@
-package com.StaticPH.MicroAud.audioPlayer;
+package com.StaticPH.SongJ.audioPlayer;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
@@ -11,8 +11,9 @@ import java.util.Set;
  * This class provides a skeletal implementation of the <tt>IAudioPlayer</tt>
  * interface, to minimize the effort required to implement this interface.
  * <p>
- * To implement an AudioPlayer, the programmer needs only to extend this
- * class and provide an implementation for the <tt>playFile</tt> methods.
+ * To implement an AudioPlayer, the programmer needs to extend this
+ * class and provide an implementation for the <tt>playFile</tt> and
+ * <tt>getSupportedTypes</tt> methods.
  * <p>
  * The documentation for each non-abstract method in this class describes its
  * implementation in detail.  Each of these methods may be overridden if the

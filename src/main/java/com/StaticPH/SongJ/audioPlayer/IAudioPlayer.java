@@ -1,4 +1,4 @@
-package com.StaticPH.MicroAud.audioPlayer;
+package com.StaticPH.SongJ.audioPlayer;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
@@ -7,6 +7,7 @@ import java.util.Set;
 // java.util.Collection is a decent conceptual example of an interface class
 
 // Require that all classes implementing this interface define everything herein
+@SuppressWarnings("unused")
 public interface IAudioPlayer {
 	/**
 	 * Play a supported type of audio file

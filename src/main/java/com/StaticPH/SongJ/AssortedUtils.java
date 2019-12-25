@@ -1,4 +1,4 @@
-package com.StaticPH.MicroAud;
+package com.StaticPH.SongJ;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -48,9 +48,6 @@ public final class AssortedUtils {
 			System.out.print(obj);
 		}
 	}
-
-	//TODO: decide between @NotNull on Predicate(and maybe Iterable) or returning false when either is null
-	// also whether to use @NotNull or call `Objects.requireNonNull(VARIABLE);` instead
 
 	/**
 	 * Filter an Iterable by applying a Predicate function to each element within.
@@ -109,6 +106,12 @@ public final class AssortedUtils {
 		Arrays.fill(bytes, (byte) 0);
 		return bytes;
 	}
+	//TODO: See if this can be made to work
+//	public static <T> T[] getFilledArr(int len, T val){
+//		final T[] arr = T[len];
+//		Arrays.fill(arr, val);
+//		return arr;
+//	}
 
 	/** Wrapper around a Thread.sleep() call just to hide away the exception handling. */
 	public static void doze(long timeoutSec) {

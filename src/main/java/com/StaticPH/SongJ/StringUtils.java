@@ -1,4 +1,4 @@
-package com.StaticPH.MicroAud;
+package com.StaticPH.SongJ;
 
 import java.util.Objects;
 import java.util.StringJoiner;
@@ -24,14 +24,6 @@ public class StringUtils {
 	/** @return A new <tt>String</tt> of length <tt>n</tt> filled with character <tt>c</tt> */
 	public static String charNTimes(char c, int n) { return new String(new char[n]).replace('\0', c); }
 
-	/*
-	???: Is it generally safe to make static any method that meets all the following criteria:
-		takes 1 or more objects as a parameter
-		uses those objects to determine a result and/or create a new object(s)
-		returns [one of] the new object(s)
-		neither uses nor modifies ANY non-static class member variables(AKA fields), directly or by calling another method.
-	 */
-	//???: Is this variadic `strings` variable functionally treated the same as a String[]?
 	private static String joinUp(StringJoiner joiner, String... strings) {
 		for (String s : strings) {
 			joiner.add(s);

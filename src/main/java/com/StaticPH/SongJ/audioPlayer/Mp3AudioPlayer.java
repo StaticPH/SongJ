@@ -1,4 +1,4 @@
-package com.StaticPH.MicroAud.audioPlayer;
+package com.StaticPH.SongJ.audioPlayer;
 
 import javazoom.spi.mpeg.sampled.file.MpegAudioFileReader;
 import org.apache.logging.log4j.Logger;
@@ -10,12 +10,12 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 
-import static com.StaticPH.MicroAud.AssortedUtils.getLogger;
+import static com.StaticPH.SongJ.AssortedUtils.getLogger;
 
 /**
  * TODO: DOCUMENT ME
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "RedundantSuppression"})
 public class Mp3AudioPlayer extends SpecializedAudioPlayer {
 	private static final Logger loggo = getLogger("Mp3AudioPlayer");
 
@@ -24,6 +24,7 @@ public class Mp3AudioPlayer extends SpecializedAudioPlayer {
 
 	//Populate with the content-type of supported files
 	//TODO: Try with mp2, m1a, mpx, mxa, aac, mpa, m2a, m25a... I dont even know how many of these are distinct file types that need to be tested for
+	@SuppressWarnings({"WeakerAccess","ArraysAsListWithZeroOrOneArgument"})
 	protected static final Set<String> supportedTypes = Collections.singleton("AUDIO_MPEG");
 
 	@Override

@@ -1,6 +1,7 @@
-package com.StaticPH.MicroAud.cli;
+package com.StaticPH.SongJ.cli;
 
-import com.StaticPH.MicroAud.StringUtils;
+import com.StaticPH.SongJ.Constants.Colors;
+import com.StaticPH.SongJ.StringUtils;
 import com.beust.jcommander.JCommander;
 
 import java.io.File;
@@ -27,8 +28,6 @@ public class ArgManager {
 		this.initArgs(args);
 	}
 
-	public void setProgramDesc(String programDesc) { this.programDesc = programDesc; }
-
 	private void initArgs(final String[] args) {
 		// ???: Is there really any reason for this, if initArgs is only ever called after instantiating ArgManager.arguments?
 		this.arguments = new CLIArguments();
@@ -36,13 +35,15 @@ public class ArgManager {
 		this.unknownOptions = this.jCommander.getUnknownOptions();
 	}
 
+	public void setProgramDesc(String programDesc) { this.programDesc = programDesc; }
+
 	/**
 	 * Execute base behavior for ArgManager.
 	 *
 	 * @return {@code false} if this function results in a call to {@code JCommander.usage()}, otherwise {@code true}
 	 */
 	private boolean baseBehavior() {
-		Vector<File> files = this.arguments.getAudioFiles();  //Try to remove this
+		Vector<File> files = this.arguments.getAudioFiles();
 		int fileCount = 0;
 		if (files != null) {
 			files.removeIf(f -> f.getName().toLowerCase().endsWith(".properties"));
@@ -52,15 +53,17 @@ public class ArgManager {
 		// Directory traversal and file list cleanup is handled during the first call to arguments.getAudioFiles();
 		/* If no files were given, display the program help and ignore further arguments.*/
 		if (fileCount == 0) {
-			System.out.println("\033[31mERROR: No playable files were discovered.\033[0m");
+			System.out.println(Colors.FG.RED + "ERROR: No playable files were discovered." + Colors.DEFAULT);
 			this.jCommander.usage();
 			return false;
 		}
 		else if (this.unknownOptions.size() != 0) {
 			System.out.println(
-				"\033[31mERROR: Unknown option(s) found: " +
-				StringUtils.delimitStrings(", ", this.unknownOptions.toString())
+				Colors.FG.RED + "ERROR: Unknown option(s) found: " +
+				StringUtils.delimitStrings(", ", this.unknownOptions.toString()) + Colors.DEFAULT
 			);
+//			this.jCommander.usage();
+//			return false;
 		}
 		return true;
 	}
@@ -68,6 +71,7 @@ public class ArgManager {
 	@SuppressWarnings("WeakerAccess")
 	protected void configureJCommander() {
 		this.jCommander.setExpandAtSign(false);
+		this.jCommander.setAcceptUnknownOptions(false);
 		this.jCommander.setUsageFormatter(
 			new CustomUsageFormatter(this.jCommander, this.programDesc, CLIArguments.realAudioFilesParamDescription)
 		);
@@ -75,7 +79,8 @@ public class ArgManager {
 
 	// Only ever run this AFTER instantiating ArgManager!!
 	public boolean init() {
+		new Colors(this.arguments.useColor());
 		this.configureJCommander();
-		return this.baseBehavior(); //Could probably just have defaultArgs access the value of arguments itself...
+		return this.baseBehavior();
 	}
 }
